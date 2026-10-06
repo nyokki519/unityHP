@@ -1,0 +1,90 @@
+/* Opening trademark: fade in, a brief pause, then reveal the photographic cover. */
+.intro-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 1000;
+  background: #fefaf1;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity var(--intro-exit, 900ms) cubic-bezier(0.2, 0.65, 0.25, 1);
+}
+.intro-pending .intro-screen {
+  display: flex;
+}
+.intro-identity {
+  text-align: center;
+  padding: 24px;
+}
+.intro-mark {
+  display: block;
+  margin: 0 auto;
+  width: clamp(165px, 21vw, 240px);
+  height: auto;
+  object-fit: contain;
+  opacity: 0;
+  transform: translateY(9px) scale(0.965);
+  transition:
+    opacity var(--intro-enter, 850ms) ease,
+    transform var(--intro-enter, 1200ms) cubic-bezier(0.16, 0.75, 0.3, 1);
+}
+.intro-caption {
+  margin: 28px 0 0;
+  color: #5e4935;
+  font:
+    9px/1.5 Arial,
+    sans-serif;
+  letter-spacing: 0.21em;
+  opacity: 0;
+  transition: opacity 650ms ease 250ms;
+}
+.intro-screen.is-ready .intro-mark {
+  opacity: 1;
+  transform: none;
+}
+.intro-screen.is-ready .intro-caption {
+  opacity: 1;
+}
+.intro-screen.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Fade only the viewport-sized cover; keep the long page out of a GPU layer. */
+.intro-pending .site-header,
+.intro-pending main,
+.intro-pending .site-footer {
+  visibility: hidden;
+}
+.intro-revealing .site-header,
+.intro-revealing main,
+.intro-revealing .site-footer {
+  visibility: visible;
+}
+@media (max-width: 900px), (pointer: coarse) {
+  :root {
+    --intro-enter: 1400ms;
+    --intro-exit: 1800ms;
+  }
+  .intro-mark {
+    width: clamp(180px, 46vw, 250px);
+  }
+  .intro-caption {
+    transition-duration: 1000ms;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-mark {
+    transform: none !important;
+    transition: opacity var(--intro-enter, 850ms) ease !important;
+  }
+  .intro-screen {
+    transition: opacity var(--intro-exit, 900ms) ease !important;
+  }
+  .intro-caption {
+    transition: opacity 800ms ease !important;
+  }
+}

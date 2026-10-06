@@ -416,7 +416,11 @@
         setMenu(false);
     });
   });
-  media.addEventListener("change", () => setMenu(false));
+  const resetMenu = () => setMenu(false);
+  if (typeof media.addEventListener === "function")
+    media.addEventListener("change", resetMenu);
+  else if (typeof media.addListener === "function")
+    media.addListener(resetMenu);
   const header = document.querySelector(".site-header");
   const updateHeader = () =>
     header.classList.toggle("scrolled", window.scrollY > 20);

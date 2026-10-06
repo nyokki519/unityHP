@@ -44,7 +44,7 @@ try:
   for width in (1440, 1280, 768, 414, 393, 390, 375):
    page.set_viewport_size({'width': width, 'height': 950})
    page.goto(url, wait_until='networkidle')
-   page.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=2500)
+   page.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=7500)
    assert page.locator('.intro-screen').count() == 0, 'Reduced-motion static opening finishes'
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'), f'overflow at {width}'
    assert page.locator('#representative-name').inner_text() == 'やぶ（矢吹）'
@@ -133,6 +133,7 @@ try:
    if width in (1440,390):
     page.screenshot(path=str(artifacts / f'top-{width}.png'))
     page.locator('#organizer').screenshot(path=str(artifacts / f'people-{width}.png'), style='.site-header, .skip-link {visibility:hidden!important}')
+   assert page.evaluate('window.__cls') < 0.1, 'Opening must not cause visible layout shifts'
    print(f'PASS {width}px: profiles, photos, links, menu, FAQ, no overflow; CLS {page.evaluate("window.__cls"):.4f}', flush=True)
   assert not errors, errors
   # Check the real timed transition separately from reduced-motion layout checks.
@@ -148,13 +149,13 @@ try:
    assert opening.locator('main').evaluate('(e)=>e.inert')
    screen_box = opening.locator('.intro-screen').bounding_box()
    assert screen_box['width'] == width and screen_box['height'] == 950, screen_box
-   opening.wait_for_timeout(900)
+   opening.wait_for_timeout(1500 if width <= 900 else 900)
    assert float(opening.locator('.intro-mark').evaluate('(e)=>getComputedStyle(e).opacity')) > .99
    opening.screenshot(path=str(artifacts / f'opening-{width}.png'))
    opening.wait_for_function('window.__introStates.some(s=>s.includes("intro-revealing"))')
    opening.wait_for_timeout(300)
    opening.screenshot(path=str(artifacts / f'opening-transition-{width}.png'))
-   opening.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=3500)
+   opening.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=7500)
    assert opening.locator('.intro-screen').count() == 0
    assert not opening.locator('main').evaluate('(e)=>e.inert')
    assert opening.locator('main').evaluate('(e)=>getComputedStyle(e).opacity') == '1'
@@ -164,12 +165,15 @@ try:
    video = opening.video
    opening_context.close()
    video.save_as(str(artifacts / f'opening-{width}.webm'))
+   assert page.evaluate('window.__cls') < 0.1, 'Opening must not cause visible layout shifts'
    print(f'PASS {width}px: fullscreen trademark, fade into site, interaction restored, no repeat; video saved', flush=True)
   normal = browser.new_context(reduced_motion='no-preference')
   guard = normal.new_page()
   guard.route('https://unity-analytics.vercel.app/api/public/events', lambda r: r.fulfill(status=503, json={}))
   guard.goto(url + '#organizer', wait_until='networkidle')
-  assert guard.locator('.intro-screen').count() == 0, 'Direct section links skip the opening'
+  guard.wait_for_function('document.querySelector(".intro-screen")?.classList.contains("is-ready")')
+  assert guard.locator('.intro-screen').count() == 1, 'Direct section links also show the opening'
+  guard.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=7500)
   guard.goto(url, wait_until='domcontentloaded')
   guard.keyboard.press('Escape')
   assert guard.locator('.intro-screen').count() == 0
@@ -180,12 +184,13 @@ try:
   assert guard.locator('.skip-link').evaluate('(e)=>document.activeElement===e')
   guard.goto(url, wait_until='domcontentloaded')
   guard.emulate_media(reduced_motion='reduce')
-  guard.wait_for_function('!document.documentElement.classList.contains("intro-pending")')
+  guard.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=7500)
   assert not guard.locator('main').evaluate('(e)=>e.inert')
   guard.emulate_media(reduced_motion='no-preference')
   guard.route('**/intro.js*', lambda r: r.abort())
   guard.goto(url, wait_until='domcontentloaded')
-  guard.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=4500)
+  guard.wait_for_function('document.querySelector(".intro-screen")?.classList.contains("is-ready")')
+  guard.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=7500)
   assert guard.locator('main').evaluate('(e)=>getComputedStyle(e).opacity') == '1'
   normal.close()
   nojs = browser.new_context(java_script_enabled=False)
@@ -195,7 +200,7 @@ try:
   assert plain.locator('#hero-title').is_visible()
   nojs.close()
   assert not errors, errors
-  print('PASS intro: deep link, Escape, keyboard focus, reduced motion, failed script and JavaScript disabled', flush=True)
+  print('PASS intro: deep links replay, Escape, keyboard focus, reduced motion, no external intro fetch and JavaScript disabled', flush=True)
   # Deleting / adding member data changes profiles without editing HTML.
   page.evaluate('UNITY_CONTENT.hosts.push({name:"追加メンバー",role:"主催",photo:"nyokki",initial:"A",hobby:"読書",message:"追加プロフィール"})')
   page.evaluate('document.querySelectorAll("[data-photo],[data-featured]").forEach(e=>e.replaceChildren());["event-list","gallery-list","host-list","voice-list","representative-photo"].forEach(id=>document.getElementById(id).replaceChildren()); const s=document.createElement("script");s.src="script.js?profile-update-check";document.body.append(s)')

@@ -44,38 +44,310 @@
       href="assets/images/unity-logo-396.webp"
       type="image/webp"
     />
-    <script>
-      // Start the safety timeout after CSS can show the cover, not during download.
-      if (!location.hash) {
-        document.documentElement.classList.add("intro-pending");
-        window.unityStartIntroFallback = () => {
-          if (window.unityIntroFallback) return;
-          window.unityIntroFallback = setTimeout(() => {
-            document.documentElement.classList.remove(
-              "intro-pending",
-              "intro-revealing",
-            );
-            document.querySelector(".intro-screen")?.remove();
-            document.querySelectorAll("[data-intro-inert]").forEach((node) => {
-              node.inert = false;
-              delete node.dataset.introInert;
-            });
-          }, 4000);
-        };
-        document.addEventListener(
-          "load",
-          function stylesheetReady(event) {
-            if (event.target.matches?.('link[rel="stylesheet"]')) {
-              window.unityStartIntroFallback();
-              document.removeEventListener("load", stylesheetReady, true);
-            }
-          },
-          true,
-        );
+    <!-- UNITY_OPENING_START -->
+<style id="unity-opening-style">
+/* Opening trademark: fade in, a brief pause, then reveal the photographic cover. */
+.intro-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 1000;
+  background: #fefaf1;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity var(--intro-exit, 900ms) cubic-bezier(0.2, 0.65, 0.25, 1);
+}
+.intro-pending .intro-screen {
+  display: flex;
+}
+.intro-identity {
+  text-align: center;
+  padding: 24px;
+}
+.intro-mark {
+  display: block;
+  margin: 0 auto;
+  width: clamp(165px, 21vw, 240px);
+  height: auto;
+  object-fit: contain;
+  opacity: 0;
+  transform: translateY(9px) scale(0.965);
+  transition:
+    opacity var(--intro-enter, 850ms) ease,
+    transform var(--intro-enter, 1200ms) cubic-bezier(0.16, 0.75, 0.3, 1);
+}
+.intro-caption {
+  margin: 28px 0 0;
+  color: #5e4935;
+  font:
+    9px/1.5 Arial,
+    sans-serif;
+  letter-spacing: 0.21em;
+  opacity: 0;
+  transition: opacity 650ms ease 250ms;
+}
+.intro-screen.is-ready .intro-mark {
+  opacity: 1;
+  transform: none;
+}
+.intro-screen.is-ready .intro-caption {
+  opacity: 1;
+}
+.intro-screen.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Fade only the viewport-sized cover; keep the long page out of a GPU layer. */
+.intro-pending .site-header,
+.intro-pending main,
+.intro-pending .site-footer {
+  visibility: hidden;
+}
+.intro-revealing .site-header,
+.intro-revealing main,
+.intro-revealing .site-footer {
+  visibility: visible;
+}
+@media (max-width: 900px), (pointer: coarse) {
+  :root {
+    --intro-enter: 1400ms;
+    --intro-exit: 1800ms;
+  }
+  .intro-mark {
+    width: clamp(180px, 46vw, 250px);
+  }
+  .intro-caption {
+    transition-duration: 1000ms;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .intro-mark {
+    transform: none !important;
+    transition: opacity var(--intro-enter, 850ms) ease !important;
+  }
+  .intro-screen {
+    transition: opacity var(--intro-exit, 900ms) ease !important;
+  }
+  .intro-caption {
+    transition: opacity 800ms ease !important;
+  }
+}
+
+</style>
+<script id="unity-opening-runtime">
+"use strict";
+/* Inlined before network dependencies. Every document entry gets an opening. */
+(function () {
+  var root = document.documentElement;
+  var current = null;
+  var template = null;
+  var wasHidden = document.hidden;
+  var mobile =
+    window.innerWidth <= 900 ||
+    (window.matchMedia &&
+      window.matchMedia("(max-width: 900px), (pointer: coarse)").matches);
+  var hold = mobile ? 3000 : 1250;
+  var fade = mobile ? 1800 : 950;
+  root.classList.add("intro-pending");
+
+  function start(screen) {
+    if (current) return;
+    if (!template) template = screen.cloneNode(true);
+    var regions = [];
+    var timers = [];
+    var finished = false;
+    var launched = false;
+    var revealing = false;
+    var visibleAt = 0;
+    var mark = screen.querySelector("img");
+    var observer;
+    var state = { finish: finish, resume: launch, pause: pause };
+    current = state;
+    root.classList.add("intro-pending");
+    root.classList.remove("intro-revealing");
+
+    function later(callback, delay) {
+      var id = setTimeout(callback, delay);
+      timers.push(id);
+    }
+    function clearTimers() {
+      timers.forEach(clearTimeout);
+      timers = [];
+    }
+    function lockRegions() {
+      if (finished) return;
+      document
+        .querySelectorAll(".site-header, main, .site-footer")
+        .forEach(function (node) {
+          if (regions.indexOf(node) < 0 && !node.inert) {
+            node.inert = true;
+            node.setAttribute("data-intro-inert", "");
+            regions.push(node);
+          }
+        });
+    }
+    function finish() {
+      if (finished) return;
+      finished = true;
+      clearTimers();
+      if (observer) observer.disconnect();
+      root.classList.remove("intro-pending", "intro-revealing");
+      screen.remove();
+      regions.forEach(function (node) {
+        node.inert = false;
+        node.removeAttribute("data-intro-inert");
+      });
+      document.removeEventListener("keydown", skipOnKey);
+      document.removeEventListener("wheel", preventScroll);
+      document.removeEventListener("touchmove", preventScroll);
+      current = null;
+    }
+    function preventScroll(event) {
+      event.preventDefault();
+    }
+    function skipOnKey(event) {
+      if (
+        [
+          "Escape",
+          "Tab",
+          "ArrowDown",
+          "ArrowUp",
+          "PageDown",
+          "PageUp",
+          "Home",
+          "End",
+          " ",
+        ].indexOf(event.key) >= 0
+      )
+        finish();
+    }
+    function siteReady() {
+      var css = document.getElementById("site-styles");
+      var hero = document.querySelector(".hero-photo img");
+      // Older in-app browsers may not apply a preload link's load handler.
+      if (css && css.rel !== "stylesheet") css.rel = "stylesheet";
+      return (
+        document.readyState !== "loading" &&
+        (!css || (css.rel === "stylesheet" && css.sheet)) &&
+        hero &&
+        hero.complete &&
+        hero.naturalWidth > 0
+      );
+    }
+    function leave() {
+      if (finished || document.hidden || revealing) return;
+      // Decode the first photograph underneath the logo before the crossfade.
+      if (!siteReady() && Date.now() - visibleAt < 10000) {
+        later(leave, 100);
+        return;
       }
-    </script>
-    <link rel="preload" href="assets/images/unity-logo-396.webp" as="image" />
-    <link rel="stylesheet" href="style.css?v=mobile-opening-2" />
+      revealing = true;
+      var hero = document.querySelector(".hero-photo img");
+      var begin = function () {
+        if (finished || document.hidden) return;
+        root.classList.add("intro-revealing");
+        screen.classList.add("is-leaving");
+        later(finish, fade + 80);
+      };
+      var begun = false;
+      var once = function () {
+        if (!begun) {
+          begun = true;
+          begin();
+        }
+      };
+      if (hero && typeof hero.decode === "function") {
+        hero.decode().then(once, once);
+        later(once, 300);
+      } else once();
+    }
+    function launch() {
+      if (finished || launched || document.hidden) return;
+      launched = true;
+      visibleAt = Date.now();
+      var raf =
+        window.requestAnimationFrame ||
+        function (callback) {
+          setTimeout(callback, 16);
+        };
+      // Two frames preserve the fade even with a fully cached, embedded logo.
+      raf(function () {
+        raf(function () {
+          if (finished || document.hidden) {
+            launched = false;
+            return;
+          }
+          screen.classList.add("is-ready");
+          later(leave, hold);
+          later(finish, 14000);
+        });
+      });
+    }
+    function pause() {
+      if (finished) return;
+      clearTimers();
+      launched = false;
+      revealing = false;
+      root.classList.remove("intro-revealing");
+      screen.classList.remove("is-ready", "is-leaving");
+    }
+    lockRegions();
+    observer = new MutationObserver(lockRegions);
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+    document.addEventListener("keydown", skipOnKey);
+    document.addEventListener("wheel", preventScroll, { passive: false });
+    document.addEventListener("touchmove", preventScroll, { passive: false });
+    // The trademark is embedded in the document: no image or JS fetch can skip it.
+    mark.addEventListener("load", launch, { once: true });
+    mark.addEventListener("error", launch, { once: true });
+    if (mark.complete) launch();
+    else later(launch, 300);
+  }
+
+  function replay() {
+    if (current) {
+      current.pause();
+      current.resume();
+      return;
+    }
+    if (!template || !document.body) return;
+    var screen = template.cloneNode(true);
+    document.body.insertBefore(screen, document.body.firstChild);
+    start(screen);
+  }
+  var boot = new MutationObserver(function () {
+    var screen = document.querySelector(".intro-screen");
+    if (screen && screen.querySelector(".intro-caption")) {
+      boot.disconnect();
+      start(screen);
+    }
+  });
+  boot.observe(document.documentElement, { childList: true, subtree: true });
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted) replay();
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      wasHidden = true;
+      if (current) current.pause();
+    } else if (wasHidden) {
+      wasHidden = false;
+      replay();
+    }
+  });
+})();
+
+</script>
+<!-- UNITY_OPENING_END -->
+    <link id="site-styles" rel="preload" as="style" href="style.css?v=line-opening-3" onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript><link rel="stylesheet" href="style.css?v=line-opening-3" /></noscript>
     <script src="content.js" defer></script>
     <script src="event-feed.js" defer></script>
     <script src="script.js" defer></script>
@@ -85,7 +357,7 @@
       <div class="intro-identity">
         <img
           class="intro-mark"
-          src="assets/images/unity-logo-396.webp"
+          src="data:image/webp;base64,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"
           width="396"
           height="403"
           alt=""
@@ -639,6 +911,5 @@
         >をご覧ください。
       </div></noscript
     >
-    <script src="intro.js?v=mobile-opening-2" async></script>
   </body>
 </html>
