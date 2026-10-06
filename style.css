@@ -2249,6 +2249,7 @@ noscript {
   position: fixed;
   inset: 0;
   width: 100vw;
+  height: 100vh;
   height: 100dvh;
   z-index: 1000;
   background: #fefaf1;
@@ -2318,12 +2319,19 @@ noscript {
   filter: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .intro-screen {
-    display: none !important;
+  .intro-screen,
+  .intro-mark,
+  .intro-caption {
+    transition: none;
   }
-  .intro-pending .site-header,
-  .intro-pending main,
-  .intro-pending .site-footer {
+  .intro-screen.is-ready .intro-mark,
+  .intro-screen.is-ready .intro-caption {
+    opacity: 1;
+    transform: none;
+  }
+  .intro-revealing .site-header,
+  .intro-revealing main,
+  .intro-revealing .site-footer {
     opacity: 1;
     filter: none;
     transform: none;

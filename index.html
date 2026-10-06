@@ -45,30 +45,40 @@
       type="image/webp"
     />
     <script>
-      // The cover is decorative. A failed script must never hide the site.
-      if (
-        !matchMedia("(prefers-reduced-motion: reduce)").matches &&
-        !location.hash
-      ) {
+      // Start the safety timeout after CSS can show the cover, not during download.
+      if (!location.hash) {
         document.documentElement.classList.add("intro-pending");
-        window.unityIntroFallback = setTimeout(() => {
-          document.documentElement.classList.remove(
-            "intro-pending",
-            "intro-revealing",
-          );
-          document.querySelector(".intro-screen")?.remove();
-          document.querySelectorAll("[data-intro-inert]").forEach((node) => {
-            node.inert = false;
-            delete node.dataset.introInert;
-          });
-        }, 4000);
+        window.unityStartIntroFallback = () => {
+          if (window.unityIntroFallback) return;
+          window.unityIntroFallback = setTimeout(() => {
+            document.documentElement.classList.remove(
+              "intro-pending",
+              "intro-revealing",
+            );
+            document.querySelector(".intro-screen")?.remove();
+            document.querySelectorAll("[data-intro-inert]").forEach((node) => {
+              node.inert = false;
+              delete node.dataset.introInert;
+            });
+          }, 4000);
+        };
+        document.addEventListener(
+          "load",
+          function stylesheetReady(event) {
+            if (event.target.matches?.('link[rel="stylesheet"]')) {
+              window.unityStartIntroFallback();
+              document.removeEventListener("load", stylesheetReady, true);
+            }
+          },
+          true,
+        );
       }
     </script>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="preload" href="assets/images/unity-logo-396.webp" as="image" />
+    <link rel="stylesheet" href="style.css?v=mobile-opening-2" />
     <script src="content.js" defer></script>
     <script src="event-feed.js" defer></script>
     <script src="script.js" defer></script>
-    <script src="intro.js" defer></script>
   </head>
   <body>
     <div class="intro-screen" aria-hidden="true">
@@ -80,6 +90,7 @@
           height="403"
           alt=""
           decoding="async"
+          fetchpriority="high"
         />
         <p class="intro-caption">CAFE &amp; COMMUNITY</p>
       </div>
@@ -628,5 +639,6 @@
         >をご覧ください。
       </div></noscript
     >
+    <script src="intro.js?v=mobile-opening-2" async></script>
   </body>
 </html>

@@ -44,7 +44,8 @@ try:
   for width in (1440, 1280, 768, 414, 393, 390, 375):
    page.set_viewport_size({'width': width, 'height': 950})
    page.goto(url, wait_until='networkidle')
-   assert page.locator('.intro-screen').count() == 0, 'Reduced motion skips the opening'
+   page.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=2500)
+   assert page.locator('.intro-screen').count() == 0, 'Reduced-motion static opening finishes'
    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'), f'overflow at {width}'
    assert page.locator('#representative-name').inner_text() == 'やぶ（矢吹）'
    assert page.locator('#representative-role').inner_text() == 'Unity代表'
@@ -182,7 +183,7 @@ try:
   guard.wait_for_function('!document.documentElement.classList.contains("intro-pending")')
   assert not guard.locator('main').evaluate('(e)=>e.inert')
   guard.emulate_media(reduced_motion='no-preference')
-  guard.route('**/intro.js', lambda r: r.abort())
+  guard.route('**/intro.js*', lambda r: r.abort())
   guard.goto(url, wait_until='domcontentloaded')
   guard.wait_for_function('!document.documentElement.classList.contains("intro-pending")', timeout=4500)
   assert guard.locator('main').evaluate('(e)=>getComputedStyle(e).opacity') == '1'
