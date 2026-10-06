@@ -1,0 +1,5 @@
+Ivan Fonin / cc0-photos
+Source: https://github.com/ivanfonin/cc0-photos/tree/22be2e285db50193362e8ed06712b4146e714f6c
+
+# cc0-photos
+Some of my photos which I share under Creative Commons Zero (CC0), so they can be used in open source projects.

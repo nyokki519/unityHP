@@ -1,0 +1,127 @@
+diff --git a/app/api/public/events/route.ts b/app/api/public/events/route.ts
+new file mode 100644
+--- /dev/null
++++ b/app/api/public/events/route.ts
+@@ -0,0 +1,32 @@
++import { adminClient } from '@/lib/supabase';
++import { projectPublicEvents } from '@/lib/public-events';
++
++export const dynamic = 'force-dynamic';
++const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, OPTIONS' };
++
++export function OPTIONS() {
++  return new Response(null, { status: 204, headers: cors });
++}
++
++export async function GET() {
++  try {
++    const db = adminClient();
++    if (!db) throw new Error('not_configured');
++    const now = new Date();
++    const { data, error } = await db.from('events')
++      .select('id,title,starts_at,category,source_url,status,website_visible')
++      .eq('website_visible', true)
++      .gte('starts_at', now.toISOString())
++      .order('starts_at', { ascending: true })
++      .limit(200)
++      .abortSignal(AbortSignal.timeout(8000));
++    if (error) throw new Error('query_failed');
++    return Response.json({ version: 1, generatedAt: now.toISOString(), events: projectPublicEvents(data || [], now) }, {
++      headers: { ...cors, 'Cache-Control': 'public, max-age=60, s-maxage=60' }
++    });
++  } catch {
++    return Response.json({ error: 'public_events_unavailable' }, {
++      status: 503, headers: { ...cors, 'Cache-Control': 'no-store' }
++    });
++  }
++}
+diff --git a/lib/public-events.ts b/lib/public-events.ts
+new file mode 100644
+--- /dev/null
++++ b/lib/public-events.ts
+@@ -0,0 +1,50 @@
++/** Public projection only; never return participants, raw_json, or analytics metrics. */
++export type WebsiteEventRow = {
++  id: string;
++  title: string;
++  starts_at: string | null;
++  category: string | null;
++  source_url: string | null;
++  status: string | null;
++  website_visible: boolean;
++};
++
++const hiddenStatuses = new Set(['draft', 'private', 'deleted', 'cancelled', 'canceled', '中止', '非公開', '下書き']);
++const categories = new Set(['CAFE', 'BOOK', 'BEAUTY', 'LATTE ART', 'BOARD GAME', 'SPORT', 'COMMUNITY']);
++
++function publicUrl(input: string | null): string | null {
++  if (!input) return null;
++  try {
++    const url = new URL(input);
++    if (url.protocol !== 'https:' || url.username || url.password) return null;
++    return url.href;
++  } catch { return null; }
++}
++
++function categoryFor(row: WebsiteEventRow) {
++  const supplied = row.category?.trim().toUpperCase();
++  if (supplied && categories.has(supplied)) return supplied;
++  if (/ラテ|latte/i.test(row.title)) return 'LATTE ART';
++  if (/読書|本|book/i.test(row.title)) return 'BOOK';
++  if (/美容|beauty/i.test(row.title)) return 'BEAUTY';
++  if (/ボードゲーム|board.?game/i.test(row.title)) return 'BOARD GAME';
++  if (/ダーツ|フットサル|スポーツ|sport|darts/i.test(row.title)) return 'SPORT';
++  if (/カフェ|cafe/i.test(row.title)) return 'CAFE';
++  return 'COMMUNITY';
++}
++
++export function projectPublicEvents(rows: WebsiteEventRow[], now = new Date()) {
++  return rows.flatMap(row => {
++    if (row.website_visible !== true || hiddenStatuses.has(row.status?.trim().toLowerCase() || '')) return [];
++    if (!row.title?.trim() || !row.starts_at || !/(?:Z|[+-]\d{2}:\d{2})$/.test(row.starts_at)) return [];
++    const timestamp = Date.parse(row.starts_at);
++    if (!Number.isFinite(timestamp) || timestamp < now.getTime()) return [];
++    return [{
++      id: row.id,
++      title: row.title.trim(),
++      startsAt: new Date(timestamp).toISOString(),
++      category: categoryFor(row),
++      url: publicUrl(row.source_url)
++    }];
++  }).sort((a, b) => a.startsAt.localeCompare(b.startsAt)).slice(0, 30);
++}
+diff --git a/supabase/migrations/005_website_events.sql b/supabase/migrations/005_website_events.sql
+new file mode 100644
+--- /dev/null
++++ b/supabase/migrations/005_website_events.sql
+@@ -0,0 +1,7 @@
++-- Run on the Analytics database, not on the static website.
++-- Explicit publication separates website events from imported drafts/internal events.
++alter table public.events add column if not exists website_visible boolean not null default false;
++create index if not exists idx_events_website_upcoming on public.events(starts_at)
++  where website_visible = true;
++comment on column public.events.website_visible is 'Explicit approval to list this event in the public Unity website feed';
++-- Existing RLS stays enabled. Do not grant anonymous database access.
+diff --git a/tests/public-events.test.ts b/tests/public-events.test.ts
+new file mode 100644
+--- /dev/null
++++ b/tests/public-events.test.ts
+@@ -0,0 +1,18 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import { projectPublicEvents, type WebsiteEventRow } from '../lib/public-events';
++const now = new Date('2026-10-05T15:00:00Z');
++const row: WebsiteEventRow = { id: 'event-1', title: '読書カフェ会', starts_at: '2026-10-10T14:00:00+09:00', category: null, source_url: 'https://tunagate.com/circle/93279/events/123', status: 'published', website_visible: true };
++test('projects exact fields, converts timezone, and omits private data', () => {
++ const actual = projectPublicEvents([{ ...row, registrations: [{ name: 'PRIVATE' }], raw_json: { secret: true }, revenue: 123 } as WebsiteEventRow], now);
++ assert.deepEqual(actual, [{ id: row.id, title: row.title, startsAt: '2026-10-10T05:00:00.000Z', category: 'BOOK', url: row.source_url }]);
++});
++test('omits unapproved, past, canceled, invalid and timezone-ambiguous rows', () => {
++ const rows = [ { ...row, website_visible: false }, { ...row, starts_at: '2026-10-04T14:00:00+09:00' }, { ...row, status: 'cancelled' }, { ...row, status: 'draft' }, { ...row, starts_at: 'not-a-date' }, { ...row, starts_at: '2026-10-10T14:00:00' } ];
++ assert.deepEqual(projectPublicEvents(rows, now), []);
++});
++test('sorts future events and does not expose unsafe links', () => {
++ const actual = projectPublicEvents([{ ...row, id: 'later', starts_at: '2026-10-20T14:00:00+09:00', source_url: 'javascript:alert(1)' }, row], now);
++ assert.equal(actual[0].id, 'event-1'); assert.equal(actual[1].url, null);
++ assert.deepEqual(projectPublicEvents([], now), []);
++});

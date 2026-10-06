@@ -1,1185 +1,632 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Unity（カフェコミュニティ） — 一生もののつながりを</title>
-<meta name="description" content="Unity（ユニティ）は、20代・30代のためのカフェ交流コミュニティ。品川エリアを中心に、心地よい出会いの場をつくっています。" />
-
-<!-- ============================================================
-     フォント読み込み（Google Fonts CDN）
-     見出し：Shippori Mincho（上質・カフェらしい落ち着きのある明朝体）
-     本文：  Noto Sans JP（可読性の高いゴシック体）
-     ============================================================ -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-
-<style>
-
-  /* ============================================================
-     🎨 デザイントークン（CSS変数）
-     ここを書き換えるだけでサイト全体の色・文字サイズを一括変更できます。
-     ============================================================ */
-  :root {
-    /* ---- ベースカラー：温かみのあるオフホワイト × チャコール ---- */
-    --color-bg:            #FAF9F7; /* サイト全体の背景色（ベース） */
-    --color-bg-soft:       #F3F0EA; /* セクション区切り用のわずかに濃いオフホワイト */
-    --color-charcoal:      #1A1A1A; /* メインテキスト・ダーク背景セクション用 */
-    --color-charcoal-soft: #2B2A28; /* ダークセクションの背景（純黒より柔らかい） */
-    --color-text-muted:    #8A8578; /* 補足テキスト・キャプション用の淡いグレー */
-
-    /* ---- アクセントカラー ---- */
-    /* ⚠️ メインアクセント：ボタン・数字・重要アイコンに使用するゴールド */
-    --color-gold:        #C9A84C;
-    --color-gold-light:  #E8C96D; /* ゴールドの明るいバリエーション（ホバー等） */
-    /* ⚠️ サブアクセント：グラデーションやホバーエフェクト、背景の装飾に「さりげなく」使うパープルゴールド */
-    --color-purple:       #D9B3EA;
-    --color-purple-soft:  rgba(217, 179, 234, 0.16);
-    /* メイン×サブの合わせ技グラデーション（CTAボタンやディバイダーに使用） */
-    --gradient-accent: linear-gradient(120deg, var(--color-gold) 0%, var(--color-purple) 100%);
-
-    --color-border: rgba(201, 168, 76, 0.22);
-
-    /* ---- タイポグラフィ ---- */
-    --font-display: 'Shippori Mincho', serif;   /* 見出し用（上質・カフェらしい雰囲気） */
-    --font-body: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif; /* 本文用 */
-
-    /* ⚠️ フォントサイズ：ここを変更すると全ページの見出し・本文サイズが変わります */
-    --fs-hero:     clamp(2.4rem, 7vw, 4.2rem);
-    --fs-h2:       clamp(1.8rem, 4.5vw, 2.6rem);
-    --fs-h3:       clamp(1.2rem, 3vw, 1.5rem);
-    --fs-body:     1rem;
-    --fs-small:    0.875rem;
-
-    /* ---- レイアウト ---- */
-    --max-width: 1080px;
-    --space-section: clamp(4rem, 12vw, 9rem); /* セクション間の縦の余白（贅沢に） */
-    --radius-soft: 2px; /* 角丸は最小限に留め、上質さを演出 */
-  }
-
-  /* ============================================================
-     リセット・基本設定
-     ============================================================ */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: var(--font-body);
-    font-weight: 300;
-    background: var(--color-bg);
-    color: var(--color-charcoal);
-    line-height: 1.9;
-    -webkit-font-smoothing: antialiased;
-  }
-  img { max-width: 100%; display: block; }
-  a { color: inherit; text-decoration: none; }
-  ul { list-style: none; }
-
-  /* キーボード操作時のフォーカスを明示（アクセシビリティ配慮） */
-  a:focus-visible, button:focus-visible {
-    outline: 2px solid var(--color-gold);
-    outline-offset: 3px;
-  }
-
-  /* 動きを抑えたい設定のユーザーへの配慮 */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
-
-  .wrap {
-    max-width: var(--max-width);
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  .section {
-    padding: var(--space-section) 0;
-  }
-
-  .eyebrow {
-    /* ⚠️ セクション上部の小さなラベル文字。色や文字間はここで調整 */
-    font-family: var(--font-display);
-    font-size: var(--fs-small);
-    color: var(--color-gold);
-    letter-spacing: 0.15em;
-    margin-bottom: 0.75rem;
-    display: inline-block;
-  }
-
-  .heading {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: var(--fs-h2);
-    line-height: 1.5;
-    letter-spacing: 0.02em;
-  }
-
-  /* ============================================================
-     <!-- ここからHeroセクション -->
-     画面いっぱいのファーストビュー。カフェ交流会の写真＋キャッチコピー
-     ============================================================ */
-  #hero {
-    position: relative;
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 6rem 1.5rem 4rem;
-    color: #FAF9F7;
-    overflow: hidden;
-    background-color: var(--color-charcoal);
-  }
-
-  /* ⚠️画像を差し替える場合はここのURLを変更（推奨サイズ：横1600px以上） */
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(180deg, rgba(26,26,26,0.35) 0%, rgba(26,26,26,0.78) 78%, rgba(26,26,26,0.92) 100%),
-      url('https://picsum.photos/1600/2000?grayscale&blur=1');
-    background-size: cover;
-    background-position: center;
-    z-index: 0;
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 640px;
-    /* 段階的なフェードイン用（1回だけの演出） */
-    opacity: 0;
-    animation: heroReveal 1.4s ease forwards;
-    animation-delay: 0.2s;
-  }
-
-  @keyframes heroReveal {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .hero-logo {
-    /* ⚠️ロゴ画像の表示サイズ。大きく/小さくしたい場合はここの数値を変更 */
-    width: 168px;
-    height: 168px;
-    object-fit: cover;
-    margin: 0 auto 2rem;
-    /* 縁取り：メインアクセント（ゴールド）の枠でカードのように見せる */
-    border: 4px solid var(--color-gold-light);
-    box-shadow: 0 16px 40px -16px rgba(0, 0, 0, 0.55);
-  }
-
-  .hero-content .eyebrow {
-    color: var(--color-gold-light);
-  }
-
-  /* ⚠️ここがキャッチコピー（メインの見出し） */
-  .hero-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: var(--fs-hero);
-    line-height: 1.4;
-    margin-bottom: 1.25rem;
-  }
-
-  /* ⚠️ここがキャッチコピーのサブテキスト */
-  .hero-sub {
-    font-size: 1rem;
-    font-weight: 300;
-    color: rgba(250, 249, 247, 0.82);
-    letter-spacing: 0.04em;
-  }
-
-  .hero-scroll {
-    position: absolute;
-    bottom: 2.25rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-    width: 1px;
-    height: 46px;
-    background: rgba(250, 249, 247, 0.4);
-    overflow: hidden;
-  }
-  .hero-scroll::after {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--color-gold-light);
-    animation: scrollLine 2.2s ease-in-out infinite;
-  }
-  @keyframes scrollLine {
-    0%   { top: -100%; }
-    60%  { top: 100%; }
-    100% { top: 100%; }
-  }
-
-  /* ============================================================
-     <!-- ここからConceptセクション -->
-     Unityに込めた想い。中央寄せ・余白を贅沢に使う
-     ============================================================ */
-  #concept {
-    text-align: center;
-  }
-  #concept .wrap {
-    max-width: 680px;
-  }
-  #concept .heading {
-    margin-bottom: 2.25rem;
-  }
-  /* ⚠️ここがConceptの本文テキスト */
-  #concept p {
-    font-size: 1.0625rem;
-    color: #3A3733;
-    margin-bottom: 1.5rem;
-  }
-  #concept p:last-child { margin-bottom: 0; }
-
-  /* ============================================================
-     <!-- ここからFeatures / Systemセクション -->
-     参加までの3ステップ（実際に順序のある流れなので数字を使用）
-     ============================================================ */
-  #features {
-    background: var(--color-bg-soft);
-  }
-  #features .section-head {
-    text-align: center;
-    margin-bottom: 3.5rem;
-  }
-  .steps {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2.5rem;
-  }
-  @media (max-width: 720px) {
-    .steps { grid-template-columns: 1fr; gap: 2.75rem; }
-  }
-  .step {
-    text-align: center;
-    padding: 0 1rem;
-  }
-  .step-number {
-    /* メインアクセント（ゴールド）を数字に使用 */
-    font-family: var(--font-display);
-    font-size: 2.75rem;
-    font-weight: 700;
-    color: var(--color-gold);
-    margin-bottom: 1rem;
-    line-height: 1;
-  }
-  .step-title {
-    font-family: var(--font-display);
-    font-size: var(--fs-h3);
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-  }
-  /* ⚠️ここが各ステップの説明文 */
-  .step-desc {
-    font-size: 0.9375rem;
-    color: var(--color-text-muted);
-  }
-
-  /* ============================================================
-     <!-- ここからEventsセクション -->
-     過去の開催実績＋今後の予定
-     ============================================================ */
-  #events .section-head {
-    margin-bottom: 3rem;
-  }
-  .event-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1.75rem;
-  }
-  .event-card {
-    background: #fff;
-    border: 1px solid var(--color-border);
-    overflow: hidden;
-    transition: transform 0.35s ease, box-shadow 0.35s ease;
-  }
-  /* ホバー：ユーザー操作に応じた変化のみ許可（一律の演出は避ける） */
-  .event-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 18px 32px -20px rgba(26, 26, 26, 0.25);
-  }
-  .event-card-image {
-    /* ⚠️画像を差し替える場合はここのURLを変更（イベントごとの写真に置き換え） */
-    height: 180px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-  }
-  .event-card-image::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 60%, rgba(26,26,26,0.35) 100%);
-  }
-  .event-card-body {
-    padding: 1.5rem;
-  }
-  .event-tag {
-    display: inline-block;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    color: var(--color-gold);
-    border: 1px solid var(--color-gold);
-    padding: 0.15rem 0.65rem;
-    margin-bottom: 0.75rem;
-  }
-  /* Comingソンカード用：サブアクセント（パープルゴールド）をさりげなく使用 */
-  .event-tag.is-upcoming {
-    color: #A96FC2;
-    border-color: var(--color-purple);
-    background: var(--color-purple-soft);
-  }
-  .event-card-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.125rem;
-    margin-bottom: 0.4rem;
-  }
-  /* ⚠️ここが各イベントの一言コメント */
-  .event-card-desc {
-    font-size: 0.875rem;
-    color: var(--color-text-muted);
-  }
-
-  /* ============================================================
-     <!-- ここからSocial / Joinセクション（CTA） -->
-     Instagram導線と参加申し込みボタン
-     ============================================================ */
-  #join {
-    background: var(--color-charcoal);
-    color: #FAF9F7;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  /* サブアクセント（パープルゴールド）の、ごく控えめな背景あしらい */
-  #join::before {
-    content: '';
-    position: absolute;
-    width: 620px;
-    height: 620px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--color-purple) 0%, transparent 70%);
-    opacity: 0.18;
-    top: -220px;
-    right: -200px;
-    pointer-events: none;
-  }
-  #join .wrap {
-    position: relative;
-    z-index: 1;
-    max-width: 560px;
-  }
-  #join .heading {
-    color: #FAF9F7;
-    margin-bottom: 1rem;
-  }
-  /* ⚠️ここがJoinセクションの説明文 */
-  #join p {
-    color: rgba(250, 249, 247, 0.72);
-    margin-bottom: 2.75rem;
-    font-size: 0.9375rem;
-  }
-
-  .cta-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.25rem;
-  }
-
-  /* 参加申し込みボタン：メインアクセント（ゴールド）＋サブアクセントのグラデーション */
-  .btn-primary {
-    display: inline-block;
-    padding: 1rem 2.75rem;
-    font-family: var(--font-body);
-    font-size: 0.9375rem;
-    letter-spacing: 0.05em;
-    color: var(--color-charcoal);
-    background: var(--gradient-accent);
-    border-radius: var(--radius-soft);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  .btn-primary:hover {
-    opacity: 0.88;
-    transform: translateY(-2px);
-  }
-
-  /* Instagramリンク */
-  .btn-instagram {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: 0.9375rem;
-    color: #FAF9F7;
-    border-bottom: 1px solid rgba(250, 249, 247, 0.4);
-    padding-bottom: 0.2rem;
-    transition: border-color 0.3s ease, color 0.3s ease;
-  }
-  .btn-instagram:hover {
-    border-color: var(--color-gold-light);
-    color: var(--color-gold-light);
-  }
-  .btn-instagram svg { width: 18px; height: 18px; }
-
-  /* ============================================================
-     フッター
-     ============================================================ */
-  footer {
-    background: var(--color-charcoal);
-    color: rgba(250, 249, 247, 0.5);
-    text-align: center;
-    padding: 2.5rem 1.5rem 3rem;
-    font-size: 0.8125rem;
-    border-top: 1px solid rgba(250, 249, 247, 0.08);
-  }
-  footer .footer-logo {
-    font-family: var(--font-display);
-    color: var(--color-gold-light);
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    letter-spacing: 0.08em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  /* ⚠️フッターのロゴ画像サイズ（画像内に"Unity"の文字も含まれています） */
-  footer .footer-logo img {
-    width: 64px;
-    height: 64px;
-    object-fit: cover;
-    border: 2px solid var(--color-gold-light);
-  }
-
-  /* ============================================================
-     <!-- ここからThemeセクション（出会い×成長=楽しい） -->
-     コミュニティの合言葉を、ひとつの"式"として大きく見せるセクション
-     ============================================================ */
-  #theme {
-    text-align: center;
-    background: var(--color-bg-soft);
-    position: relative;
-    overflow: hidden;
-  }
-  /* サブアクセント（パープルゴールド）の、ごく控えめな背景の光 */
-  #theme::before {
-    content: '';
-    position: absolute;
-    width: 480px;
-    height: 480px;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--color-purple) 0%, transparent 70%);
-    opacity: 0.14;
-    top: -160px;
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-  }
-  #theme .wrap { position: relative; z-index: 1; }
-  /* ⚠️ここが「出会い×成長=楽しい」の式。単語を変える場合はこのspanタグの中身を変更 */
-  .theme-equation {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: clamp(1.6rem, 6vw, 3rem);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: center;
-    gap: 0.5em;
-    margin-bottom: 1.75rem;
-  }
-  .theme-equation .op {
-    /* ×・= の記号：メインアクセント（ゴールド）で強調 */
-    color: var(--color-gold);
-    font-size: 0.75em;
-  }
-  /* ⚠️ここがテーマの補足説明文 */
-  #theme .theme-desc {
-    max-width: 520px;
-    margin: 0 auto;
-    color: var(--color-text-muted);
-    font-size: 0.9375rem;
-  }
-
-  /* ============================================================
-     <!-- ここからイベントシーンセクション（雰囲気が伝わる写真ギャラリー） -->
-     ============================================================ */
-  #gallery .section-head {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-  .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 140px;
-    gap: 0.6rem;
-  }
-  /* PC表示：一部の写真を大きく見せてリズムをつける */
-  .gallery-grid .g-large { grid-column: span 2; grid-row: span 2; }
-  @media (max-width: 720px) {
-    /* スマホでは2カラムのシンプルなグリッドに切り替え */
-    .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 110px; }
-    .gallery-grid .g-large { grid-column: span 2; grid-row: span 1; }
-  }
-  .gallery-item {
-    /* ⚠️画像を差し替える場合はここのURL（style属性内のbackground-image）を変更 */
-    background-size: cover;
-    background-position: center;
-    overflow: hidden;
-    position: relative;
-  }
-  .gallery-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-  .gallery-item:hover img { transform: scale(1.06); }
-
-  /* ============================================================
-     <!-- ここから運営紹介／メンバーの声セクション -->
-     ============================================================ */
-  #organizer .section-head {
-    text-align: center;
-    margin-bottom: 3.5rem;
-  }
-
-  /* ---- 代表プロフィール（1名・中央に大きめ表示） ---- */
-  .organizer-lead {
-    text-align: center;
-    max-width: 420px;
-    margin: 0 auto clamp(3.5rem, 8vw, 5rem);
-  }
-  .organizer-lead-photo {
-    /* ⚠️代表の写真URLはここを変更 */
-    width: 136px;
-    height: 136px;
-    margin: 0 auto 1.25rem;
-    border-radius: 50%;
-    background-size: cover;
-    background-position: center;
-    border: 3px solid var(--color-gold);
-    box-shadow: 0 0 0 5px var(--color-purple-soft);
-  }
-  .organizer-role {
-    font-size: 0.8125rem;
-    color: var(--color-gold);
-    letter-spacing: 0.06em;
-    margin-bottom: 0.6rem;
-    display: block;
-  }
-  .organizer-name {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1.125rem;
-    margin-bottom: 0.6rem;
-  }
-  /* ⚠️ここが趣味の一文 */
-  .organizer-hobby {
-    font-size: 0.8125rem;
-    color: var(--color-gold);
-    margin-bottom: 0.75rem;
-  }
-  /* ⚠️ここが運営メンバーの紹介文（一言コメント） */
-  .organizer-bio {
-    font-size: 0.9375rem;
-    color: var(--color-text-muted);
-  }
-
-  /* ---- 主催メンバーの見出し ---- */
-  .organizer-sub-heading {
-    text-align: center;
-    margin-bottom: 2.25rem;
-  }
-  .organizer-sub-heading .heading { font-size: var(--fs-h3); }
-
-  /* ---- 主催メンバー：カードグリッド（人数が増えたらこのdivを複製） ---- */
-  .organizer-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-    max-width: 960px;
-    margin: 0 auto clamp(3.5rem, 8vw, 5.5rem);
-  }
-  .organizer-card {
-    text-align: center;
-  }
-  .organizer-card .organizer-photo {
-    /* ⚠️主催メンバーの写真URLはここを変更 */
-    width: 104px;
-    height: 104px;
-    margin: 0 auto 1rem;
-    border-radius: 50%;
-    background-size: cover;
-    background-position: center;
-    border: 3px solid var(--color-bg);
-    box-shadow: 0 0 0 1px var(--color-border);
-  }
-  .organizer-card .organizer-name { font-size: 1rem; }
-  .organizer-card .organizer-hobby,
-  .organizer-card .organizer-bio { font-size: 0.8125rem; }
-
-  /* メンバーの声：カードグリッド（現在5人想定・追加/削除が容易な構造） */
-  .voices-heading {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-  .voices-heading .heading { font-size: var(--fs-h3); }
-  .voice-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.5rem;
-  }
-  .voice-card {
-    background: #fff;
-    border: 1px solid var(--color-border);
-    padding: 1.75rem 1.5rem;
-  }
-  .voice-quote-mark {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    color: var(--color-purple);
-    line-height: 1;
-    margin-bottom: 0.5rem;
-    display: block;
-  }
-  /* ⚠️ここがメンバーのコメント本文 */
-  .voice-comment {
-    font-size: 0.9375rem;
-    color: #3A3733;
-    margin-bottom: 1.25rem;
-  }
-  .voice-person {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  .voice-avatar {
-    /* ⚠️メンバー写真のURLはここを変更（用意できない場合はイニシャル表示のままでOK） */
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--color-bg-soft);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-display);
-    font-size: 0.875rem;
-    color: var(--color-gold);
-    flex-shrink: 0;
-  }
-  /* ⚠️ここがメンバーの名前・属性 */
-  .voice-name { font-size: 0.8125rem; font-weight: 500; }
-  .voice-meta { font-size: 0.75rem; color: var(--color-text-muted); }
-
-  /* ============================================================
-     <!-- ここから活動についてセクション -->
-     ============================================================ */
-  #activity {
-    background: var(--color-bg-soft);
-  }
-  #activity .section-head {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-  .activity-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1px;
-    background: var(--color-border);
-    border: 1px solid var(--color-border);
-  }
-  .activity-item {
-    background: var(--color-bg-soft);
-    padding: 2rem 1.5rem;
-    text-align: center;
-  }
-  .activity-item .activity-label {
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    color: var(--color-gold);
-    margin-bottom: 0.6rem;
-    display: block;
-  }
-  /* ⚠️ここが活動内容の数値・見出し（頻度、定員など） */
-  .activity-item .activity-value {
-    font-family: var(--font-display);
-    font-size: 1.375rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-  /* ⚠️ここが活動内容の補足説明 */
-  .activity-item .activity-note {
-    font-size: 0.8125rem;
-    color: var(--color-text-muted);
-  }
-
-  /* ============================================================
-     <!-- ここからFAQ（よくある質問）セクション -->
-     ネイティブの<details>タグを使用（JS不要・アコーディオン開閉） -->
-     ============================================================ */
-  #faq .section-head {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-  .faq-list {
-    max-width: 700px;
-    margin: 0 auto;
-  }
-  .faq-item {
-    border-bottom: 1px solid var(--color-border);
-  }
-  .faq-item summary {
-    cursor: pointer;
-    padding: 1.375rem 0.25rem;
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    list-style: none;
-  }
-  .faq-item summary::-webkit-details-marker { display: none; }
-  /* 「＋」アイコン：開閉状態に応じてメインアクセント色が回転 */
-  .faq-item summary::after {
-    content: '+';
-    color: var(--color-gold);
-    font-size: 1.25rem;
-    font-family: var(--font-body);
-    transition: transform 0.3s ease;
-    margin-left: 1rem;
-  }
-  .faq-item[open] summary::after { transform: rotate(45deg); }
-  /* ⚠️ここが回答文 */
-  .faq-item .faq-answer {
-    padding: 0 0.25rem 1.5rem;
-    font-size: 0.9375rem;
-    color: var(--color-text-muted);
-  }
-
-</style>
-</head>
-<body>
-
-  <!-- ============================================================
-       Hero（ファーストビュー）
-       ============================================================ -->
-  <section id="hero">
-    <div class="hero-bg" aria-hidden="true"></div>
-    <div class="hero-content">
-      <!-- ⚠️ロゴマーク：添付いただいた画像をそのまま使用（加工なし）。差し替える場合はunity-logo.jpgを変更 -->
-      <img class="hero-logo" src="unity-logo.jpg" alt="Unity ロゴ" width="396" height="403" />
-      <span class="eyebrow">UNITY TOKYO</span>
-      <!-- ⚠️ここがキャッチコピー：メインの見出しテキストを変更する場合はここ -->
-      <h1 class="hero-title">一生ものの仲間と成長する<br>新しい出会いを</h1>
-      <!-- ⚠️ここがキャッチコピーのサブテキスト -->
-      <p class="hero-sub">一生ものの仲間と出会い、共に成長していく。品川発のカフェ交流コミュニティ</p>
-    </div>
-    <div class="hero-scroll" aria-hidden="true"></div>
-  </section>
-
-  <!-- ============================================================
-       Concept（想い・価値）
-       ============================================================ -->
-  <section id="concept" class="section">
-    <div class="wrap">
-      <span class="eyebrow">CONCEPT</span>
-      <h2 class="heading">「一時」ではなく、<br>「長く続く」関係を。</h2>
-      <!-- ⚠️ここがConcept本文：Unityの想いを語るテキスト。3〜4段落を想定 -->
-      <p>初対面の緊張も、名刺交換のような形式ばった空気も、Unityにはありません。あるのは、グルメやカフェでのゆったりした時間と、少し柔らかくなった会話だけ。</p>
-      <p>Unityは、20代・30代の"今をがんばる人たち"のためのカフェ交流コミュニティです。大人数の飲み会でも、堅苦しいセミナーでもなく、少人数制のカフェ交流会という形で、自然なつながりが生まれる時間をつくっています。</p>
-      <p>その日限りの出会いで終わらせない。一緒に時間を重ね、一生ものの仲間として、共に成長していく。それが、Unityが目指す関係のかたちです。</p>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       Theme（出会い×成長=楽しい）
-       ============================================================ -->
-  <section id="theme" class="section">
-    <div class="wrap">
-      <!-- ⚠️ここが「出会い×成長=楽しい」の式。単語を変える場合はこのspanタグの中身を変更 -->
-      <p class="theme-equation">
-        <span>出会い</span><span class="op">×</span><span>成長</span><span class="op">=</span><span>楽しい</span>
-      </p>
-      <!-- ⚠️ここがテーマの補足説明文 -->
-      <p class="theme-desc">出会った人が、一生ものの仲間になる。そして、その仲間と一緒に成長していく。Unityが大切にしているのは、そんな関係が自然に生まれる時間です。</p>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       Features / System（参加までのステップ）
-       ============================================================ -->
-  <section id="features" class="section">
-    <div class="wrap">
-      <div class="section-head" style="text-align:center;">
-        <span class="eyebrow">HOW IT WORKS</span>
-        <h2 class="heading">参加までの3ステップ</h2>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f3ed" />
+    <title>Unity | 東京の20代カフェコミュニティ</title>
+    <meta
+      name="description"
+      content="一生ものの仲間と、成長する。Unityは東京を中心に活動する20代中心のカフェコミュニティ。カフェ会・読書・ボードゲーム・ラテアート・スポーツを通じて、自然なつながりが育つ時間をつくっています。"
+    />
+    <link rel="canonical" href="https://nyokki519.github.io/unityHP/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:site_name" content="Unity" />
+    <meta property="og:title" content="Unity — 一生ものの仲間と、成長する。" />
+    <meta
+      property="og:description"
+      content="コーヒーを飲みながら、少しずつ仲間になる。東京の20代中心のカフェコミュニティ。"
+    />
+    <meta property="og:url" content="https://nyokki519.github.io/unityHP/" />
+    <meta
+      property="og:image"
+      content="https://nyokki519.github.io/unityHP/assets/images/ogp.jpg"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Unity — 一生ものの仲間と、成長する。カフェで過ごす参加者たち"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Unity — 一生ものの仲間と、成長する。" />
+    <meta
+      name="twitter:description"
+      content="東京の20代中心のカフェコミュニティ。自然なつながりが育つ時間を。"
+    />
+    <meta
+      name="twitter:image"
+      content="https://nyokki519.github.io/unityHP/assets/images/ogp.jpg"
+    />
+    <link
+      rel="icon"
+      href="assets/images/unity-logo-396.webp"
+      type="image/webp"
+    />
+    <script>
+      // The cover is decorative. A failed script must never hide the site.
+      if (
+        !matchMedia("(prefers-reduced-motion: reduce)").matches &&
+        !location.hash
+      ) {
+        document.documentElement.classList.add("intro-pending");
+        window.unityIntroFallback = setTimeout(() => {
+          document.documentElement.classList.remove(
+            "intro-pending",
+            "intro-revealing",
+          );
+          document.querySelector(".intro-screen")?.remove();
+          document.querySelectorAll("[data-intro-inert]").forEach((node) => {
+            node.inert = false;
+            delete node.dataset.introInert;
+          });
+        }, 4000);
+      }
+    </script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="content.js" defer></script>
+    <script src="event-feed.js" defer></script>
+    <script src="script.js" defer></script>
+    <script src="intro.js" defer></script>
+  </head>
+  <body>
+    <div class="intro-screen" aria-hidden="true">
+      <div class="intro-identity">
+        <img
+          class="intro-mark"
+          src="assets/images/unity-logo-396.webp"
+          width="396"
+          height="403"
+          alt=""
+          decoding="async"
+        />
+        <p class="intro-caption">CAFE &amp; COMMUNITY</p>
       </div>
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">01</div>
-          <h3 class="step-title">応募する</h3>
-          <!-- ⚠️ここが各ステップの説明文 -->
-          <p class="step-desc">Instagram（@unity_up9）またはお申し込みフォームから気になる回にエントリー。</p>
+    </div>
+    <a class="skip-link" href="#main">本文へ移動</a>
+    <header class="site-header">
+      <a class="wordmark" href="#hero" aria-label="Unity トップへ"
+        ><img
+          class="brand-logo"
+          src="assets/images/unity-logo-396.webp"
+          width="396"
+          height="403"
+          alt=""
+          loading="lazy"
+        /><span class="wordmark-label">Unity</span
+        ><span class="wordmark-note">CAFE & COMMUNITY</span></a
+      >
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="navigation"
+        aria-label="メニューを開く"
+      >
+        <span></span><span></span>
+      </button>
+      <nav id="navigation" aria-label="メインナビゲーション">
+        <a href="#concept">Unityについて</a><a href="#events">イベント</a
+        ><a href="#gallery">日々の風景</a><a href="#organizer">運営について</a
+        ><a href="#first-time">初めての方へ</a
+        ><a data-link="instagram" target="_blank" rel="noopener noreferrer"
+          >Instagram <span aria-hidden="true">↗</span></a
+        >
+        <a class="button nav-cta" href="#events"
+          >イベントを見る <span aria-hidden="true">↗</span></a
+        >
+      </nav>
+    </header>
+    <main id="main">
+      <section class="hero" id="hero" aria-labelledby="hero-title">
+        <div class="hero-visual">
+          <div class="hero-photo" data-featured="hero"></div>
         </div>
-        <div class="step">
-          <div class="step-number">02</div>
-          <h3 class="step-title">カフェで集う</h3>
-          <p class="step-desc">少人数制のカフェ交流会で、肩肘張らずに自然な会話を楽しむ時間。</p>
-        </div>
-        <div class="step">
-          <div class="step-number">03</div>
-          <h3 class="step-title">つながりを育てる</h3>
-          <p class="step-desc">その場限りで終わらない。コミュニティを通じて、関係が続いていく。</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       イベントシーン（雰囲気が伝わる写真ギャラリー）
-       ============================================================ -->
-  <section id="gallery" class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">EVENT SCENES</span>
-        <h2 class="heading">当日の雰囲気</h2>
-      </div>
-      <div class="gallery-grid">
-        <!-- ⚠️画像を差し替える場合は、下の各divのstyle内URLを変更してください -->
-        <div class="gallery-item g-large" style="background-image:url('gallery-1.jpg');"></div>
-        <div class="gallery-item" style="background-image:url('gallery-2.jpg');"></div>
-        <div class="gallery-item" style="background-image:url('gallery-3.jpg');"></div>
-        <div class="gallery-item" style="background-image:url('gallery-4.jpg');"></div>
-        <div class="gallery-item" style="background-image:url('gallery-5.jpg');"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       Events（過去の開催実績・今後の予定）
-       ============================================================ -->
-  <section id="events" class="section">
-    <div class="wrap">
-      <div class="section-head" style="text-align:center;">
-        <span class="eyebrow">EVENTS</span>
-        <h2 class="heading">これまでの開催・今後の予定</h2>
-      </div>
-
-      <div class="event-grid">
-
-        <!-- イベントカード：カフェ会 -->
-        <div class="event-card">
-          <!-- ⚠️画像を差し替える場合はここのURLを変更 -->
-          <div class="event-card-image" style="background-image:url('event-cafe-kai.jpg');"></div>
-          <div class="event-card-body">
-            <span class="event-tag">品川</span>
-            <!-- ⚠️ここがイベントタイトル -->
-            <h3 class="event-card-title">カフェ会</h3>
-            <!-- ⚠️ここがイベントの一言コメント -->
-            <p class="event-card-desc">おしゃれなカフェで開催。落ち着いた雰囲気の中でじっくり話せる会。</p>
+        <div class="hero-masthead" aria-hidden="true">Unity</div>
+        <img
+          class="hero-brand"
+          src="assets/images/unity-logo-396.webp"
+          width="396"
+          height="403"
+          alt="コーヒーカップとハートを描いたUnityのトレードマーク"
+          loading="lazy"
+        />
+        <p class="hero-kicker">TOKYO, JAPAN <span>CAFE & COMMUNITY</span></p>
+        <div class="hero-copy">
+          <div>
+            <p class="eyebrow">何気ない時間が、つながりに。</p>
+            <h1 id="hero-title">
+              <span>一生ものの仲間と、</span><span>成長する。</span>
+            </h1>
           </div>
-        </div>
-
-        <!-- イベントカード：大崎 -->
-        <div class="event-card">
-          <!-- ⚠️画像を差し替える場合はここのURLを変更 -->
-          <div class="event-card-image" style="background-image:url('event-osaki.jpg');"></div>
-          <div class="event-card-body">
-            <span class="event-tag">大崎</span>
-            <!-- ⚠️ここがイベントタイトル -->
-            <h3 class="event-card-title">出会いと成長のある交流会</h3>
-            <!-- ⚠️ここがイベントの一言コメント -->
-            <p class="event-card-desc">開放感のあるカフェホールで、初参加の方も多く新しい出会いが生まれます。</p>
-          </div>
-        </div>
-
-        <!-- イベントカード：今後の予定（Coming Soon） -->
-        <div class="event-card">
-          <!-- ⚠️画像を差し替える場合はここのURLを変更 -->
-          <div class="event-card-image" style="background-image:url('event-next.jpg');"></div>
-          <div class="event-card-body">
-            <span class="event-tag is-upcoming">NEXT EVENT</span>
-            <!-- ⚠️ここが次回イベントのタイトル -->
-            <h3 class="event-card-title">次回開催、近日公開</h3>
-            <!-- ⚠️ここが次回イベントの一言コメント -->
-            <p class="event-card-desc">詳細はInstagram（@unity_up9）にて先行案内予定。お楽しみに。</p>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       運営紹介／メンバーの声
-       ============================================================ -->
-  <section id="organizer" class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">ORGANIZER</span>
-        <h2 class="heading">運営紹介</h2>
-      </div>
-
-      <!-- 代表プロフィール -->
-      <div class="organizer-lead">
-        <!-- ⚠️代表の写真URLはここを変更 -->
-        <div class="organizer-lead-photo" style="background-image:url('organizer-yabu.jpg');"></div>
-        <!-- ⚠️ここが肩書き -->
-        <span class="organizer-role">☕️ Unity代表 ☕️</span>
-        <!-- ⚠️ここが名前 -->
-        <h3 class="organizer-name">やぶ（矢吹）</h3>
-        <!-- ⚠️ここが趣味 -->
-        <p class="organizer-hobby">趣味：カフェ巡り、グルメ開拓、フットサル、アニメ</p>
-        <!-- ⚠️ここが一言コメント -->
-        <p class="organizer-bio">美味しいもの巡るのが大好きで年間300店舗以上開拓しています！<br>お互い成長できる関係値が理想です✨</p>
-      </div>
-
-      <!-- 主催メンバー見出し -->
-      <div class="organizer-sub-heading">
-        <span class="eyebrow">HOSTS</span>
-        <h3 class="heading">主催メンバー</h3>
-      </div>
-
-      <!-- 主催メンバー：カードを1つ複製すれば人数を増やせます -->
-      <div class="organizer-grid">
-
-        <!-- 主催メンバー：さやか -->
-        <div class="organizer-card">
-          <!-- ⚠️写真URLはここを変更 -->
-          <div class="organizer-photo" style="background-image:url('organizer-sayaka.jpg');"></div>
-          <span class="organizer-role">主催</span>
-          <h3 class="organizer-name">さやか</h3>
-          <p class="organizer-hobby">趣味：カフェ巡り、ランニング</p>
-          <p class="organizer-bio">Unityのみんなと一緒に、全員が楽しめる場をつくります。みんなで楽しみましょ♪</p>
-        </div>
-
-        <!-- 主催メンバー：にょっき -->
-        <div class="organizer-card">
-          <!-- ⚠️写真URLはここを変更 -->
-          <div class="organizer-photo" style="background-image:url('https://picsum.photos/seed/organizer-nyokki/300/300');"></div>
-          <span class="organizer-role">主催</span>
-          <h3 class="organizer-name">にょっき</h3>
-          <p class="organizer-hobby">趣味：生け花、フットサル、音楽</p>
-          <p class="organizer-bio">ノリを大事に✨参加者一人ひとりが心地よく過ごせる場づくりを大切にします。</p>
-        </div>
-
-        <!-- 主催メンバー：みちか -->
-        <div class="organizer-card">
-          <!-- ⚠️写真URLはここを変更 -->
-          <div class="organizer-photo" style="background-image:url('organizer-michika.jpg');"></div>
-          <span class="organizer-role">主催</span>
-          <h3 class="organizer-name">みちか</h3>
-          <p class="organizer-hobby">趣味：美容、読書、カフェ巡り</p>
-          <p class="organizer-bio">向上心のある人や主体性のある人が集まり繋がれる、そんなコミュニティを目指します。</p>
-        </div>
-
-        <!-- 主催メンバー：いけちゃん -->
-        <div class="organizer-card">
-          <!-- ⚠️写真URLはここを変更 -->
-          <div class="organizer-photo" style="background-image:url('https://picsum.photos/seed/organizer-ikechan/300/300');"></div>
-          <span class="organizer-role">主催</span>
-          <h3 class="organizer-name">いけちゃん</h3>
-          <p class="organizer-hobby">趣味：ゴルフ、スノボ、ベーグル作り</p>
-          <p class="organizer-bio">素敵な休日と感じる、それを実際に体験できる場所づくりを目指します。</p>
-        </div>
-
-      </div>
-
-      <!-- メンバーの声：カードを1つ複製すれば人数を増やせます（現在5人分） -->
-      <div class="voices-heading">
-        <span class="eyebrow">MEMBERS' VOICE</span>
-        <h3 class="heading">メンバーの声</h3>
-      </div>
-      <div class="voice-grid">
-
-        <!-- ⚠️メンバーの声カード 1人目：このdiv.voice-card全体をコピー＆ペーストすれば人数を追加できます -->
-        <div class="voice-card">
-          <span class="voice-quote-mark" aria-hidden="true">“</span>
-          <!-- ⚠️ここがコメント本文 -->
-          <p class="voice-comment">初めてでも緊張せずに話せる雰囲気で、気づいたら自然と会話が弾んでいました。</p>
-          <div class="voice-person">
-            <!-- ⚠️メンバー写真のURLに差し替え可（未設定ならイニシャルのまま表示） -->
-            <div class="voice-avatar">S</div>
-            <div>
-              <!-- ⚠️ここが名前・属性 -->
-              <div class="voice-name">Sさん♀</div>
-              <div class="voice-meta">20代・公務員</div>
+          <div class="hero-invitation">
+            <p class="hero-description">
+              東京を中心に活動する、<br />20代中心のカフェコミュニティ。
+            </p>
+            <div class="hero-actions">
+              <a class="button" href="#events"
+                >イベントを見る <span aria-hidden="true">↗</span></a
+              ><a class="text-link" href="#concept"
+                >Unityについて <span aria-hidden="true">↓</span></a
+              >
             </div>
           </div>
         </div>
-
-        <!-- メンバーの声カード 2人目 -->
-        <div class="voice-card">
-          <span class="voice-quote-mark" aria-hidden="true">“</span>
-          <p class="voice-comment">少人数だからこそ深い話ができて、参加後もつながりが続いています。</p>
-          <div class="voice-person">
-            <div class="voice-avatar">Y</div>
+        <a class="hero-scroll" href="#concept" aria-label="Unityについて読む"
+          >SCROLL <span aria-hidden="true">↓</span></a
+        >
+      </section>
+      <div class="brand-strip">
+        <p>Meet. <span>Connect.</span> Grow.</p>
+        <span>コーヒーを飲みながら、少しずつ仲間になる。</span
+        ><span class="strip-location">UNITY / TOKYO</span>
+      </div>
+      <section
+        class="intro section container"
+        id="concept"
+        aria-labelledby="intro-title"
+      >
+        <div class="intro-copy">
+          <p class="eyebrow">01 / WHAT IS UNITY</p>
+          <h2 id="intro-title">一杯のコーヒーから、<br />いつもの仲間へ。</h2>
+          <div class="intro-story">
+            <p>
+              大人になるほど、新しい出会いは少なくなる。<br />だから、職場でも家でもない場所で、<br />好きなことを一緒に楽しむ時間を。
+            </p>
+            <p>
+              初めは知り合い。次は、顔なじみ。<br />「またね」が増えるうちに、<br />少しずつ、自分の居場所になっていく。
+            </p>
+            <a class="text-link" href="#first-time"
+              >初めての方へ <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
+        <figure class="intro-visual">
+          <div class="intro-photo" data-featured="introduction"></div>
+          <figcaption>いつもの日常に、もうひとつの居場所を。</figcaption>
+        </figure>
+      </section>
+      <section
+        class="experience section"
+        id="features"
+        aria-labelledby="experience-title"
+      >
+        <div class="container experience-editorial">
+          <div class="experience-heading">
+            <p class="eyebrow">02 / THE UNITY EXPERIENCE</p>
+            <h2 id="experience-title">出会いは、<br />ゆっくり育つ。</h2>
+            <p>その日だけで終わらない。<br />一緒に過ごす時間の、その先へ。</p>
+          </div>
+          <div class="experience-image-main">
+            <div class="experience-photo" data-photo="venue"></div>
+            <p>心地よい場所で、同じ時間を。</p>
+          </div>
+          <div class="experience-image-small">
+            <div class="experience-photo" data-photo="coffee"></div>
+            <p>一杯をきっかけに、会話が広がる。</p>
+          </div>
+          <div class="experience-chapters">
+            <article>
+              <span>01</span>
+              <div>
+                <h3>Meet.</h3>
+                <p>好きなものから、話しはじめる。</p>
+              </div>
+            </article>
+            <article>
+              <span>02</span>
+              <div>
+                <h3>Connect.</h3>
+                <p>何度か会ううちに、顔なじみへ。</p>
+              </div>
+            </article>
+            <article>
+              <span>03</span>
+              <div>
+                <h3>Grow.</h3>
+                <p>新しい価値観が、日常を広げていく。</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section
+        class="events section container"
+        id="events"
+        aria-labelledby="events-title"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 / UPCOMING & EXPERIENCES</p>
+            <h2 id="events-title">次に会える、時間。</h2>
+          </div>
+          <a
+            class="text-link"
+            data-link="registration"
+            target="_blank"
+            rel="noopener noreferrer"
+            >参加申込フォームへ <span aria-hidden="true">↗</span></a
+          >
+        </div>
+        <p class="section-lead">
+          カフェ、読書、ラテアート、ボードゲーム。<br />気になる時間から、Unityを知ってみてください。
+        </p>
+        <div class="event-grid" id="event-list"></div>
+        <p
+          class="event-note"
+          id="event-feed-status"
+          role="status"
+          aria-live="polite"
+        >
+          日程・参加費はInstagramや公式LINEでご確認のうえ、参加申込フォームからお申し込みください。
+        </p>
+        <div class="event-types" aria-label="Unityの活動">
+          CAFE <span>/</span> BOOK <span>/</span> BEAUTY <span>/</span> LATTE
+          ART <span>/</span> BOARD GAME <span>/</span> SPORT
+          <span>/</span> COMMUNITY
+        </div>
+      </section>
+      <section
+        class="scenes section"
+        id="gallery"
+        aria-labelledby="scenes-title"
+      >
+        <div class="container">
+          <div class="section-heading">
             <div>
-              <div class="voice-name">Yさん♂</div>
-              <div class="voice-meta">20代・会社員</div>
+              <p class="eyebrow">04 / SCENES FROM UNITY</p>
+              <h2 id="scenes-title">Unityの、ある日。</h2>
+            </div>
+            <p>
+              笑ったり、話したり、夢中になったり。<br />Unityの日常を、少しだけ。
+            </p>
+          </div>
+          <div id="gallery-list" class="gallery-grid"></div>
+          <div class="scenes-footer">
+            <span>Small moments, lasting connections.</span
+            ><a
+              class="text-link"
+              data-link="instagram"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Instagramでも日々の風景を <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
+      </section>
+      <section
+        class="values section container"
+        id="theme"
+        aria-labelledby="values-title"
+      >
+        <div class="values-title">
+          <p class="eyebrow">05 / OUR PHILOSOPHY</p>
+          <h2 id="values-title">つながり方は、<br />あなたのペースで。</h2>
+          <p>楽しく、ゆるやかに。<br />でも、人とのつながりは大切に。</p>
+        </div>
+        <ol class="values-list">
+          <li>
+            <span>01</span>
+            <div>
+              <h3>一人で来ても、過ごしやすく。</h3>
+              <p>初めての緊張を、少しずつほぐせるように。</p>
+            </div>
+          </li>
+          <li>
+            <span>02</span>
+            <div>
+              <h3>自然に話せる空気を。</h3>
+              <p>好きなことや、何気ない話をきっかけに。</p>
+            </div>
+          </li>
+          <li>
+            <span>03</span>
+            <div>
+              <h3>一度きりより、また会える関係を。</h3>
+              <p>顔なじみが増える、その時間を大切に。</p>
+            </div>
+          </li>
+          <li>
+            <span>04</span>
+            <div>
+              <h3>無理に、輪に入らなくても。</h3>
+              <p>話す時間も、聞いている時間も、あなたらしく。</p>
+            </div>
+          </li>
+          <li>
+            <span>05</span>
+            <div>
+              <h3>イベントの先に、つながりが残るように。</h3>
+              <p>帰り道にも、少し温かい気持ちが続く場所へ。</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+      <section
+        class="first-time section"
+        id="first-time"
+        aria-labelledby="first-title"
+      >
+        <div class="container first-grid">
+          <div>
+            <p class="eyebrow">06 / YOUR FIRST TIME</p>
+            <h2 id="first-title">初めてでも、<br />気軽に。</h2>
+            <p>
+              Unityには、初参加・一人参加の方もいます。<br />無理に盛り上がる必要はありません。
+            </p>
+            <p>
+              スタッフが会話のきっかけをつくりながら、<br
+                class="desktop-break"
+              />それぞれのペースで過ごせる場を整えています。
+            </p>
+            <a
+              class="button"
+              data-link="registration"
+              target="_blank"
+              rel="noopener noreferrer"
+              >参加申込フォームへ <span aria-hidden="true">↗</span></a
+            >
+          </div>
+          <div class="first-guide">
+            <p class="guide-heading">参加までの、小さな3ステップ</p>
+            <ol>
+              <li>
+                <span>01</span>
+                <div>
+                  <h3>気になるイベントを見つける</h3>
+                  <p>Instagramや公式LINEで、内容や日程を確認。</p>
+                </div>
+              </li>
+              <li>
+                <span>02</span>
+                <div>
+                  <h3>参加申込フォームから申し込む</h3>
+                  <p>参加するイベントと必要事項を入力して、エントリー。</p>
+                </div>
+              </li>
+              <li>
+                <span>03</span>
+                <div>
+                  <h3>当日は、そのままのあなたで</h3>
+                  <p>運営が迎えます。まずは気軽に、ひとことから。</p>
+                </div>
+              </li>
+            </ol>
+            <a class="text-link" href="#faq"
+              >よくある質問を見る <span aria-hidden="true">↓</span></a
+            >
+          </div>
+        </div>
+      </section>
+      <section
+        class="community section"
+        id="community"
+        aria-labelledby="community-title"
+      >
+        <div class="container">
+          <p class="eyebrow">07 / A PLACE TO COME BACK TO</p>
+          <div class="community-stage">
+            <div class="community-visual" data-featured="community"></div>
+            <h2 id="community-title">また会おう。<br />が、増えていく。</h2>
+          </div>
+          <div class="community-story">
+            <p class="serif-note">More than an event.</p>
+            <div>
+              <p>
+                「この前の話、どうなった？」<br />そんな会話が、少しずつ増えていく。
+              </p>
+              <p>
+                リピーター同士で楽しむイベントも、<br />初めましてを迎えるカフェの時間も。<br />Unityは、関係をゆっくり育てるコミュニティです。
+              </p>
             </div>
           </div>
         </div>
-
-        <!-- メンバーの声カード 3人目 -->
-        <div class="voice-card">
-          <span class="voice-quote-mark" aria-hidden="true">“</span>
-          <p class="voice-comment">カフェという空間が心地よく、無理のないペースで交流できました。</p>
-          <div class="voice-person">
-            <div class="voice-avatar">M</div>
+      </section>
+      <section
+        class="people section"
+        id="organizer"
+        aria-labelledby="people-title"
+      >
+        <div class="container">
+          <div class="section-heading people-heading">
             <div>
-              <div class="voice-name">Mさん♂</div>
-              <div class="voice-meta">30代・会社員</div>
+              <p class="eyebrow">08 / THE PEOPLE BEHIND UNITY</p>
+              <h2 id="people-title">この時間を、つくる人。</h2>
+            </div>
+            <p>
+              初めましてを迎えるのは、こんな人たち。<br />それぞれの好きと想いを、持ち寄っています。
+            </p>
+          </div>
+          <article class="message-grid" aria-labelledby="representative-name">
+            <figure class="representative-visual">
+              <div class="representative-photo" id="representative-photo"></div>
+              <figcaption>
+                PEOPLE / 01 <span>いつもの自分で、会いましょう。</span>
+              </figcaption>
+            </figure>
+            <div class="representative-copy">
+              <p class="eyebrow" id="representative-role"></p>
+              <h3
+                class="representative-heading"
+                id="representative-heading"
+              ></h3>
+              <p class="representative-message" id="representative-message"></p>
+              <div class="representative-profile">
+                <p class="representative-name" id="representative-name"></p>
+                <p class="profile-label">好きなこと</p>
+                <p class="representative-hobby" id="representative-hobby"></p>
+              </div>
+            </div>
+          </article>
+          <div class="people-message">
+            <p class="eyebrow">OUR MESSAGE</p>
+            <div>
+              <h3>ふと立ち寄れて、<br />また会いたい人がいる。</h3>
+              <p>
+                職場や学校の外にも、自然体で過ごせる場所があったら。<br />カフェで話す、同じことを楽しむ。<br />その積み重ねが、お互いの世界を広げていく。<br />Unityは、そんな日常のつながりを大切にしています。
+              </p>
             </div>
           </div>
+          <div class="hosts-heading">
+            <h3>一緒に、場をつくる仲間。</h3>
+            <span>THE UNITY TEAM</span>
+          </div>
+          <div class="hosts-grid" id="host-list"></div>
+          <div class="voices-heading">
+            <p class="eyebrow">MEMBERS’ VOICES</p>
+            <h3>ここで過ごした人の声。</h3>
+          </div>
+          <div class="voice-grid" id="voice-list"></div>
         </div>
-
-        <!-- メンバーの声カード 4人目 -->
-        <div class="voice-card">
-          <span class="voice-quote-mark" aria-hidden="true">“</span>
-          <p class="voice-comment">運営の方が丁寧にサポートしてくれるので、一人参加でも安心でした。</p>
-          <div class="voice-person">
-            <div class="voice-avatar">K</div>
-            <div>
-              <div class="voice-name">Kさん♀</div>
-              <div class="voice-meta">20代・自営業</div>
-            </div>
+      </section>
+      <section
+        class="activity container"
+        id="activity"
+        aria-label="Unityの活動について"
+      >
+        <dl>
+          <div>
+            <dt>活動エリア</dt>
+            <dd>東京・品川を中心に</dd>
+          </div>
+          <div>
+            <dt>開催頻度</dt>
+            <dd>月4〜8回</dd>
+          </div>
+          <div>
+            <dt>カフェ会の規模</dt>
+            <dd>6〜15名 / 約2時間</dd>
+          </div>
+          <div>
+            <dt>参加者</dt>
+            <dd>20代中心・30代も</dd>
+          </div>
+        </dl>
+        <p class="small">開催内容・人数・時間は回によって異なります。</p>
+      </section>
+      <section
+        class="faq section container"
+        id="faq"
+        aria-labelledby="faq-title"
+      >
+        <div>
+          <p class="eyebrow">09 / GOOD TO KNOW</p>
+          <h2 id="faq-title">気になることを、<br />少しだけ。</h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>一人での参加でも大丈夫ですか？</summary>
+            <p>
+              はい。一人で参加される方もいます。運営が会話のきっかけをサポートしますので、ご自身のペースで過ごしてください。
+            </p>
+          </details>
+          <details>
+            <summary>参加費用はいくらですか？</summary>
+            <p>
+              イベントによって異なります。Instagram（@unity_up9）の各回の案内、または公式LINEでご確認ください。
+            </p>
+          </details>
+          <details>
+            <summary>年齢層や男女比を教えてください。</summary>
+            <p>
+              20代を中心に、30代の方も参加されています。男女比はおおよそ半々を目安に調整しています。各回の募集条件をご確認ください。
+            </p>
+          </details>
+          <details>
+            <summary>開催場所はどこですか？</summary>
+            <p>
+              品川エリアのカフェを中心に、回ごとに会場が変わります。詳細は参加確定後にご案内します。
+            </p>
+          </details>
+          <details>
+            <summary>キャンセルはできますか？</summary>
+            <p>
+              各回の募集案内をご確認ください。やむを得ない事情がある場合は、公式Instagramのメッセージから運営へご相談ください。
+            </p>
+          </details>
+        </div>
+      </section>
+      <section
+        class="instagram container"
+        id="instagram"
+        aria-labelledby="social-title"
+      >
+        <div>
+          <p class="eyebrow">KEEP IN TOUCH</p>
+          <h2 id="social-title">Unityの、日々のつづき。</h2>
+          <p>
+            日々の風景はInstagramで。<br />イベントの案内やご相談は、公式LINEからも。
+          </p>
+        </div>
+        <div class="social-links">
+          <a
+            class="text-link"
+            data-link="instagram"
+            target="_blank"
+            rel="noopener noreferrer"
+            >@unity_up9 <span aria-hidden="true">↗</span></a
+          ><a
+            class="text-link line-link"
+            data-link="line"
+            target="_blank"
+            rel="noopener noreferrer"
+            hidden
+            >公式LINE <span aria-hidden="true">↗</span></a
+          >
+        </div>
+      </section>
+      <section class="join section" id="join" aria-labelledby="join-title">
+        <div class="container">
+          <p class="eyebrow">THE NEXT CHAPTER IS YOURS.</p>
+          <h2 id="join-title">次の休日は、<br />いつもと少し違う場所へ。</h2>
+          <div class="join-bottom">
+            <p>まずは、気になる時間から。<br />Unityで、お待ちしています。</p>
+            <a class="button" href="#events"
+              >イベントを見る <span aria-hidden="true">↗</span></a
+            >
+          </div>
+          <div class="join-signoff">
+            <p class="join-signature" aria-hidden="true">See you at Unity.</p>
+            <img
+              class="closing-brand"
+              src="assets/images/unity-logo-396.webp"
+              width="396"
+              height="403"
+              alt="Unity"
+              loading="lazy"
+            />
           </div>
         </div>
-
-        <!-- メンバーの声カード 5人目 -->
-        <div class="voice-card">
-          <span class="voice-quote-mark" aria-hidden="true">“</span>
-          <p class="voice-comment">同世代の色々な価値観に触れられて、良い刺激をもらっています。</p>
-          <div class="voice-person">
-            <div class="voice-avatar">N</div>
-            <div>
-              <div class="voice-name">Nさん♂</div>
-              <div class="voice-meta">30代・会社員</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       活動について
-       ============================================================ -->
-  <section id="activity" class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">ABOUT</span>
-        <h2 class="heading">活動について</h2>
-      </div>
-      <div class="activity-list">
-        <!-- ⚠️各項目の内容はここを変更（頻度・定員・時間・エリアなど自由に増減可） -->
-        <div class="activity-item">
-          <span class="activity-label">FREQUENCY</span>
-          <div class="activity-value">月4〜8回</div>
-          <p class="activity-note">品川エリアを中心に定期開催</p>
-        </div>
-        <div class="activity-item">
-          <span class="activity-label">CAPACITY</span>
-          <div class="activity-value">1回 6〜15名</div>
-          <p class="activity-note">少人数制で会話が生まれやすい規模感</p>
-        </div>
-        <div class="activity-item">
-          <span class="activity-label">DURATION</span>
-          <div class="activity-value">約2時間</div>
-          <p class="activity-note">平日夜・休日を中心に開催</p>
-        </div>
-        <div class="activity-item">
-          <span class="activity-label">MEMBERS</span>
-          <div class="activity-value">20〜30代</div>
-          <p class="activity-note">初参加・お一人での参加も歓迎</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       よくある質問（FAQ）
-       ============================================================ -->
-  <section id="faq" class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="eyebrow">FAQ</span>
-        <h2 class="heading">よくある質問</h2>
-      </div>
-      <div class="faq-list">
-        <!-- ⚠️質問・回答を追加する場合は、このdetailsタグごとコピー＆ペーストしてください -->
-        <details class="faq-item">
-          <summary>一人での参加でも大丈夫ですか？</summary>
-          <!-- ⚠️ここが回答文 -->
-          <p class="faq-answer">はい、参加者の半数以上が一人参加です。運営が間に入って会話をサポートするので、初めての方でも安心してご参加いただけます。</p>
-        </details>
-        <details class="faq-item">
-          <summary>参加費用はいくらですか？</summary>
-          <p class="faq-answer">回によって異なります。詳細は各回の募集案内（Instagram：@unity_up9）に記載しています。</p>
-        </details>
-        <details class="faq-item">
-          <summary>年齢層や男女比を教えてください。</summary>
-          <p class="faq-answer">20代〜30代を中心に、男女比はおおよそ半々を目安に調整しています。</p>
-        </details>
-        <details class="faq-item">
-          <summary>開催場所はどこですか？</summary>
-          <p class="faq-answer">品川エリアのカフェを中心に、回ごとに会場が変わります。詳細は参加確定後にご案内します。</p>
-        </details>
-        <details class="faq-item">
-          <summary>キャンセルはできますか？</summary>
-          <p class="faq-answer">やむを得ない事情の場合はご相談ください。Instagramのメッセージよりご連絡をお願いします。</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       Social / Join（CTA）
-       ============================================================ -->
-  <section id="join" class="section">
-    <div class="wrap">
-      <span class="eyebrow">JOIN US</span>
-      <!-- ⚠️ここがJoinセクションの見出し -->
-      <h2 class="heading">次のカフェ交流会に、<br>あなたも。</h2>
-      <!-- ⚠️ここがJoinセクションの説明文 -->
-      <p>参加者募集の最新情報は公式Instagramで随時更新中。まずはフォローして、気になる回をチェックしてみてください。</p>
-      <div class="cta-group">
-        <!-- ⚠️参加申し込みのリンク先URLはここを変更 -->
-        <a href="https://nyokki519.github.io/Unity_S/" target="_blank" rel="noopener" class="btn-primary">カフェ交流会に参加する</a>
-        <a href="https://www.instagram.com/unity_up9?igsh=MXVzcnlxZWloYmNpZQ%3D%3D&utm_source=qr" target="_blank" rel="noopener" class="btn-instagram">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-            <circle cx="12" cy="12" r="4"/>
-            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-          </svg>
-          @unity_up9
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============================================================
-       フッター
-       ============================================================ -->
-  <footer>
-    <div class="footer-logo">
-      <!-- ⚠️ロゴ画像：差し替える場合はunity-logo.jpgを変更（画像内に"Unity"の文字も含まれています） -->
-      <img src="unity-logo.jpg" alt="Unity ロゴ" width="396" height="403" />
-    </div>
-    <p>&copy; 2026 Unity Tokyo. All rights reserved.</p>
-  </footer>
-
-</body>
+      </section>
+    </main>
+    <footer class="site-footer container">
+      <a class="wordmark" href="#hero" aria-label="Unity トップへ"
+        ><img
+          class="brand-logo"
+          src="assets/images/unity-logo-396.webp"
+          width="396"
+          height="403"
+          alt=""
+          loading="lazy"
+        /><span class="wordmark-label">Unity</span
+        ><span class="wordmark-note">CAFE & COMMUNITY</span></a
+      >
+      <p>一生ものの仲間と、成長する。</p>
+      <a data-link="instagram" target="_blank" rel="noopener noreferrer"
+        >Instagram ↗</a
+      ><small>© 2026 Unity Tokyo</small>
+    </footer>
+    <noscript
+      ><div class="noscript-note">
+        写真とイベント一覧を表示するにはJavaScriptを有効にしてください。参加のお申し込みは<a
+          href="https://nyokki519.github.io/Unity_S/"
+          >参加申込フォーム</a
+        >、お問い合わせは<a href="https://lin.ee/vRZi9Rf">公式LINE</a>または<a
+          href="https://www.instagram.com/unity_up9/"
+          >Instagram</a
+        >をご覧ください。
+      </div></noscript
+    >
+  </body>
 </html>

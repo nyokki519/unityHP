@@ -1,1 +1,140 @@
-# unityHP
+# Unity — カフェコミュニティのブランドサイト
+
+HTML / CSS / JavaScriptだけで動く静的サイトです。フレームワークやビルドは不要です。
+
+## 今回の大型リニューアル
+
+トップは全幅の実写写真と大きなUnityの文字へ変更しました。体験紹介は濃色の背景と大小の写真、イベントは番号と文字で構成した一覧、ギャラリーはPCでは写真に大小を付け、スマホでは幅を揃えた縦並びです。写真をタップすると拡大でき、左右ボタン・矢印キーで移動、閉じるボタン・Escapeで戻れます。
+
+ユーザー提供のコーヒーカップとハートのトレードマークを、オープニング・ヘッダー・トップ・締め・フッター・ファビコンに使用しています。元の `unity-logo.jpg` は保持し、WebPのコピーを表示しています。代表・主催メンバーの写真はすべて円形です。にょっき・いけちゃんには、趣味にちなむ白い花・雪景色を使用しています。
+
+英字見出しのCormorant Garamondは `assets/fonts/` に同梱しています。外部フォントの通信は不要で、ライセンスも同じ場所にあります。
+
+## オープニングの演出
+
+ページを開くと、アイボリーの全画面にトレードマークが浮かび、約2.2秒で写真のトップへフェードします。ページ内リンクでは再生しません。直接セクションへ開いた場合・ブラウザーの「動きを減らす」設定では省略します。Tab・Escapeでもすぐに本文へ進めます。
+
+`intro.js` の1250msがロゴ表示から切り替えまでの間隔、950msが切り替え後の片付けまでの時間です。見た目のフェードは `style.css` のオープニング節で調整します。ロゴ表示中にヒーロー画像をデコードし、裏のリンクを誤操作しないようにします。JavaScript無効・ロゴ画像失敗時は演出を省略し、演出用スクリプトだけ読み込めない場合も4秒で本文を表示します。
+
+## ローカルで見る
+
+```bash
+cd /workspace/unityHP
+python3 -m http.server 8010 --bind 127.0.0.1
+```
+
+通常のブラウザーでサーバーを開きます。写真・イベント一覧はJavaScriptで生成します。外部フォント・外部画像の読み込みはありません。申込・Instagramは既存URLを引き継いでいます。
+
+## 写真の掲載方針
+
+現在の活動写真は、ヒーロー・紹介・体験・ギャラリー・コミュニティでそれぞれ1回ずつ掲載しています。イベント一覧では同じ写真を繰り返さず、番号・内容・日時・申込導線を表示します。追加されたラテアート・体験風景・交流会・フットサルの掲載位置は [PHOTO-PLACEMENT.md](PHOTO-PLACEMENT.md) を参照してください。
+
+## 後から写真を追加する
+
+**サイズ制限で送れなかった写真は、後で追加できます。HTMLの編集は不要です。**
+
+1. 写真を `assets/images/` に保存します（ファイル名は半角英数字を推奨）。
+2. `content.js` の `photos` に写真情報を追加、または既存の項目を差し替えます。
+3. ギャラリーに追加する場合は `gallery` に写真IDを追加します。
+
+```js
+// photos の中に追加する例（実際の画像サイズ・説明に置き換えてください）
+newCafe: {
+  src: 'assets/images/new-cafe.webp',
+  alt: 'カフェで本を囲んで話す参加者たち',
+  width: 1600,
+  height: 1200,
+  position: '50% 45%',
+  mobilePosition: '60% 50%'
+},
+
+// gallery の中に追加する例
+{ photo: 'newCafe', category: 'cafe', caption: '本の話から、広がる会話。', layout: 'wide' },
+```
+
+`layout` は `wide` / `portrait` / `landscape`。`position` は切り抜き位置、`mobilePosition` はスマホ専用の位置です。`srcset` があれば画面幅に応じて軽量画像を選びます。
+
+`additionalScene` には今回追加したフットサルの写真を設定しています。`src: null` のギャラリー写真は非表示です。写真が届いたら、その項目の `src`、`alt`、`width`、`height` を設定するだけで掲載されます。にょっき・いけちゃんの写真も同じ方法で設定できます。未設定時はイニシャルを表示し、架空の人物写真は使いません。
+
+運営紹介の花・雪景色は趣味を表すモチーフとして採用しています。出典・利用条件は [assets/images/PHOTO-CREDITS.md](assets/images/PHOTO-CREDITS.md) に記録しています。写真の説明ラベルは表示しません。
+
+ヒーローを変更する場合は `featured.hero`、紹介写真は `featured.introduction`、コミュニティ写真は `featured.community` に写真IDを設定します。
+
+### 大きな写真を軽量化する（任意）
+
+元写真は上書きしません。写真掲載はPillowなしでもできます。最適化ツールを使う場合のみPillowが必要です（現在の環境には導入済み）。
+
+```bash
+python3 tools/prepare-images.py /path/to/new-cafe.jpg --alt 'カフェで会話を楽しむ参加者たち'
+```
+
+WebPの複数サイズを作成し、`photos` に貼り付けられるデータを出力します。最大辺を1600pxに縮小し、位置情報などのEXIFを出力に含めません。同じ名前の出力がある場合は更新するので、別の写真には別のファイル名を使ってください。元のJPEG12枚はリポジトリ直下に残しています。`event-next.jpg` は主役の写真には使用していません。
+
+## イベントを更新する
+
+`content.js` の `events` だけを編集します。追加は項目を複製、削除は該当項目を削除します。
+
+```js
+{
+  title: '読書とコーヒーの時間',
+  category: 'BOOK',
+  date: '2026-11-07', // 例です。実際に確定した日付を設定してください。
+  time: '14:00–16:00',
+  location: '品川',
+  description: 'お気に入りの一冊を持ち寄って。',
+  url: 'https://nyokki519.github.io/Unity_S/'
+}
+```
+
+未確定の `date` / `time` は `null` にしてください。日付を勝手に生成しません。現在は確定日時が未提供のため「開催案内」として掲載し、日程・参加費の確認はInstagram・公式LINE、お申し込みは参加申込フォームへ案内しています。公開前に実際のイベント情報へ更新してください。過去のイベントは配列から削除するか、日付を更新します。自動受付・空席管理機能はありません。
+
+Analyticsから開催日時を自動取得する処理も実装済みです。接続先の公開APIを追加・デプロイする手順は [integrations/README.md](integrations/README.md) を参照してください。API未提供・通信失敗時は上記の活動紹介に戻ります。
+
+`links.registration` が全体の申込先、`links.instagram` がInstagramです。個別イベントの `url` が未設定なら共通の申込先を使います。公式LINE `https://lin.ee/vRZi9Rf` を設定済みです。Instagramセクションに表示されます。
+
+## 代表・運営メンバーを更新する
+
+`content.js` の `representative` が代表紹介、`hosts` が主催メンバーです。名前・役割・趣味・写真・メッセージをここで更新できます。メンバー追加は `hosts` の項目を複製してください。`photo` は `photos` の写真IDを指定します。未提供写真は `src: null` のままでイニシャル表示になります。
+
+趣味はサイト内の「好きなこと」をタップすると開きます。紹介文は常に読めるようにしています。代表・主催4名の元の紹介情報を保持した方針は [CONTENT-NOTES.md](CONTENT-NOTES.md) に記録しています。
+
+## ダウンロード版を更新する
+
+```bash
+python3 tools/create-preview.py /workspace/scratch/unity-preview/Unity.html
+```
+
+写真・ロゴ・フォント・CSS・JavaScriptをまとめたHTMLを生成します。写真を変更した時も再生成してください。イベント自動取得には通信とAnalytics側の公開APIが必要です。
+
+## ファイル構成
+
+- `index.html` — ブランドストーリー、FAQ、SEO・OGP
+- `style.css` — 色・余白の変数とレスポンシブ表示
+- `content.js` — 写真、イベント、運営、参加者の声、外部リンク
+- `script.js` — データの描画、モバイルメニュー、開催情報の更新
+- `intro.js` — トレードマークの導入演出と終了処理
+- `event-feed.js` — 公開イベント情報の検証と変換
+- `integrations/` — Analytics側の公開API・移行SQL・テストの変更案
+- `assets/images/` — 軽量化した写真とOGP
+- `assets/fonts/` — ローカルの英字フォントとライセンス
+- `tools/prepare-images.py` — 任意の画像最適化ツール
+- `tools/create-ogp.py` — トップの構成から共有用画像を生成
+
+## 公開前に確認すること
+
+GitHub Pagesでの公開を想定し、canonical / og:url / og:image / Twitter画像は `https://nyokki519.github.io/unityHP/` を設定しています。実際の公開URLが異なる場合は `index.html` の各URLを変更してください。OGP画像は `assets/images/ogp.jpg` です。運営メッセージはサイト用の編集原稿なので、公開前に運営側で内容をご確認ください。
+
+GitHub Pagesの既存の公開設定を使用します。`main` の更新が `pages-build-deployment` を起動します。`.nojekyll` により静的ファイルをそのまま配信します。
+
+## 表示と操作の確認
+
+この環境ではPython Playwrightと `/usr/bin/chromium` が使用できます。追加した代表・運営紹介と既存の導線を、次のコマンドで確認できます。
+
+```bash
+python3 tools/create-preview.py /workspace/scratch/unity-preview/Unity.html
+python3 tools/check-site.py
+```
+
+ローカル検証用サーバーはテスト内で起動・終了します。1440 / 1280 / 768 / 414 / 393 / 390 / 375pxで、プロフィール情報、円形の人物写真、趣味の開閉、写真拡大と前後移動・Escape・フォーカス復帰、メニュー、FAQ、ページ内リンク、外部リンクの設定、横スクロール、レイアウトのずれを確認します。AnalyticsのAPIは失敗レスポンスを再現して案内表示を確認します。本番APIや外部サイトの応答を検証したことにはなりません。
+
+オープニングは通常の動きでPC・スマホの表示と切り替えを確認し、動きを減らす設定、ページ内リンク、Tab・Escape、演出スクリプト失敗、JavaScript無効時の本文表示も確認します。
