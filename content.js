@@ -3,8 +3,9 @@ window.UNITY_CONTENT = {
   links: {
     registration: "https://nyokki519.github.io/Unity_S/",
     instagram:
-      "https://www.instagram.com/unity_up9?igsh=MXVzcnlxZWloYmNpZQ%3D%3D&utm_source=qr",
+      "https://www.instagram.com/unity_up9/",
     line: "https://lin.ee/vRZi9Rf",
+    tunagate: "https://tunagate.com/circle/93279",
   },
   eventFeed: {
     url: "https://unity-analytics.vercel.app/api/public/events",

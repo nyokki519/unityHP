@@ -16,7 +16,7 @@ HTML / CSS / JavaScriptだけで動く静的サイトです。フレームワー
 
 新しいページを開くときはURLのハッシュ・クエリに関わらず再生します。同一ページ内のリンク移動では再生しません。LINEなどの画面復元（pageshow.persisted）や非表示からの復帰時も再生し、バックグラウンド中に演出が終わることを防ぎます。「動きを減らす」設定では拡大・移動を省き、穏やかな透明度の変化のみで表示します。Tab・Escapeでもすぐに本文へ進めます。
 
-`intro.js` と `opening.css` が演出の原本です。`python3 tools/sync-opening.py` でCSS・実行コード・公式ロゴを `index.html` に埋め込みます。外部JS・ロゴ画像・サイトCSSの読み込みに依存せず、初期HTMLだけでロゴを表示できます。サイトのCSSはpreloadから適用し、JavaScript無効時はnoscriptの通常のstylesheetで本文を表示します。変更後はsync-opening.pyを実行してから公開してください。
+`intro.js` と `opening.css` が演出の原本です。`python3 tools/sync-opening.py` でCSS・実行コード・公式ロゴを `index.html` に埋め込みます。外部JS・ロゴ画像・サイトCSSの読み込みに依存せず、初期HTMLだけでロゴを表示できます。サイトのCSSはpreloadから適用し、JavaScript無効時はnoscriptの通常のstylesheetで本文を表示します。変更後は `node tools/build-static.mjs`、`python3 tools/sync-opening.py` の順に実行してから公開してください。
 
 ## ローカルで見る
 
@@ -25,7 +25,7 @@ cd /workspace/unityHP
 python3 -m http.server 8010 --bind 127.0.0.1
 ```
 
-通常のブラウザーでサーバーを開きます。写真・イベント一覧はJavaScriptで生成します。外部フォント・外部画像の読み込みはありません。申込・Instagramは既存URLを引き継いでいます。
+通常のブラウザーでサーバーを開きます。写真・運営・活動案内は初期HTMLにも含みます。JavaScriptは操作と最新イベントの更新を担当します。外部フォント・外部画像の読み込みはありません。申込・Instagramは既存URLを引き継いでいます。
 
 ## 写真の掲載方針
 
@@ -146,3 +146,19 @@ python3 tools/check-site.py
 ### スマホのオープニング回帰確認
 
 `python3 tools/check-opening.py` で、タッチ端末の画面設定、CSS・アプリスクリプトの5秒遅延、画像decodeの失敗・未対応、動きを減らす設定を検証します。iPhone・AndroidはChromiumでの端末条件の再現であり、Safari実機での検証ではありません。
+
+## SEO Growth
+
+既存の確認HTML/robotsを保持し、初期HTMLの可読性・構造化データ・内部リンクを改善しました。実際の活動に基づく [参加ガイド](cafe-community/index.html) をsitemapに追加しています。title/description/canonicalは引き続き1組を維持します。
+
+content.jsや写真・紹介文を更新した後は、次を実行して生成HTMLもcommitしてください。
+
+```bash
+node tools/build-static.mjs
+python3 tools/sync-opening.py
+python3 -m unittest discover -s tests -v
+```
+
+公開後はActionsの「Validate SEO and published Pages」が実際のHTTP・canonical・確認ファイル等を検査し、`docs/seo/public-audit.json` に証拠を保存します。診断と制約は [docs/seo/diagnosis.md](docs/seo/diagnosis.md)、Instagramの設定条件と改善案は [docs/seo/instagram.md](docs/seo/instagram.md) を参照してください。
+
+週次のSearch Console監視・比較・施策履歴・Obsidian出力は [Unity-agent](https://github.com/nyokki519/Unity-agent)、非公開レポートの保存と設定画面は [unity-analytics](https://github.com/nyokki519/unity-analytics) に実装しています。Google認証等の初回手順はAgent READMEを参照してください。順位やインデックスは未認証のまま断定せず、施策後28日以上を観察します。

@@ -60,7 +60,8 @@
       placeholder();
       return;
     }
-    const img = element("img");
+    const existing = frame.querySelector("img");
+    const img = existing || element("img");
     img.alt = photo.alt || "";
     img.width = photo.width || 1200;
     img.height = photo.height || 900;
@@ -76,7 +77,7 @@
       frame.style.setProperty("--photo-mobile-position", photo.mobilePosition);
     img.addEventListener("error", placeholder, { once: true });
     img.src = src;
-    frame.append(img);
+    if (!existing) frame.replaceChildren(img);
   };
   document
     .querySelectorAll("[data-photo]")
@@ -250,6 +251,7 @@
     });
   }
   const gallery = document.querySelector("#gallery-list");
+  gallery.replaceChildren();
   const scenes = content.gallery.filter((scene) =>
     safeImageUrl(content.photos[scene.photo]?.src),
   );
@@ -351,6 +353,7 @@
       representative.hobby;
   }
   const hosts = document.querySelector("#host-list");
+  hosts.replaceChildren();
   content.hosts.forEach((host, index) => {
     const card = element("article", "host");
     const frame = element("div", "host-photo");
@@ -374,6 +377,7 @@
     hosts.append(card);
   });
   const voices = document.querySelector("#voice-list");
+  voices.replaceChildren();
   content.voices.forEach((voice) => {
     const figure = element("figure");
     const caption = element("figcaption", "", voice.name);

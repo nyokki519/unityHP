@@ -1,0 +1,47 @@
+name: Validate SEO and published Pages
+on:
+  push:
+    branches: [main]
+    paths: ['index.html','content.js','script.js','cafe-community/**','sitemap.xml','tools/**','tests/**','.github/workflows/seo-validation.yml']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: seo-pages-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest discover -s tests -v
+      - name: Check deterministic static build and unchanged ownership files
+        run: |
+          node tools/build-static.mjs
+          python tools/sync-opening.py
+          git diff --exit-code -- index.html googledd387772a63fca83.html robots.txt sitemap.xml
+      - name: Verify actual public Pages after deployment
+        if: github.event_name != 'pull_request'
+        run: python tools/audit-public.py
+      - name: Persist public, non-secret verification evidence
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/seo/public-audit.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'docs(seo): record public Pages verification evidence'
+            git push origin HEAD:main
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seo-public-audit
+          path: docs/seo/public-audit.json
