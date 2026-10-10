@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nyokki519.github.io/unityHP/sitemap.xml
