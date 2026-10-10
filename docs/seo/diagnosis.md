@@ -30,3 +30,11 @@ Googleへの登録・順位上昇・流入増加は未保証、未測定。GSC�
 ## ロールバック
 
 SEO変更commitを `git revert` し、テスト後にmainへ通常pushする。確認HTMLは削除しない。sitemapは実際に存在するcanonical URLのみ維持する。監視停止はAgentのActions無効化または専用secretの解除で行う。
+
+## 公開後の結果
+
+2026-10-10 16:50 UTC（10月11日 JST）の公開監査が成功。トップ/参加ガイド/既存sitemap/robots/確認HTML/写真はHTTP200。origin root robotsは404で、Googlebotのアクセスをブロックしていない。canonical・noindex・JSON-LD・初期HTMLの全運営紹介も確認した。証拠は [public-audit.json](public-audit.json)。再接続時はクラウドからの公開通信も成功したが、設定ドラフト保存と環境のPublishは別である。
+
+3リポジトリのGitHub Actionsは成功。Unity-agentの初回週次レポートは `reports/2026-10-07-de7ef081ca4b.md` に保存済みで、GSCはauthentication_required。実際の順位/指標/インデックス情報はまだ未取得。Analyticsはコード・223テスト・typecheck/build・SQL権限制御検証済みだが、本番 `/api/seo/reports` は404。Vercelにmain変更を反映し、SQL013と専用キーを設定する必要がある。ローカルのproduction serverでは未認証GET/POSTが401/no-store、設定画面200を確認した。
+
+公式資料の取得はGoogle Search Analytics・URL Inspection・JavaScript SEOおよびMeta Insights資料で成功。Instagram外部検索表示のヘルプはHTTP200だが本文が取得できず、投稿表示条件の確認は未完了。Insightsの権限と検索表示条件を混同しない。

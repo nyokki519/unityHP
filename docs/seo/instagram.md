@@ -41,3 +41,9 @@ Search ConsoleからInstagram Insightsは取得できない。Instagram Platform
 - https://developers.facebook.com/docs/instagram-platform/instagram-api-with-facebook-login/insights/
 
 本プロジェクトではプロフィール案とHP相互リンクの片側まで実装。アカウント設定変更・投稿公開・Insights取得は未実施であり、人間によるアカウント権限の確認後に進める。
+
+## 公式資料の取得結果
+
+公開監査でFacebook Login Insightsの公式本文を取得できた。対象はprofessional accounts。資料ではInstagram Loginの `instagram_business_basic` / `instagram_business_manage_insights` と、Facebook Loginの `instagram_basic` / `instagram_manage_insights` / `pages_read_engagement` を区別している。Business Managerの役割等によって追加要件があるので、選択したLogin方式・自分が管理するアカウントか否かを確定してから接続する。
+
+外部検索ヘルプはHTTP200だが本文の条件は取得できなかった。公式メタデータでGoogle検索からのInstagramメディア削除に関する記事であることまで確認。上記の年齢/公開/プロアカウント条件は設定確認の候補であり、本アカウントへの適用を検証した結果ではない。Instagram Login Insightsの個別URLは404だったため、取得できた上記公式Insights資料を入口に現行導線を確認する。
