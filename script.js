@@ -115,7 +115,9 @@
       weekday: "short",
     }).format(parsed);
   };
-  const eventList = document.querySelector("#event-list");
+  const eventList = document.querySelector("#monthly-event-list");
+  const introduction=document.querySelector("#event-list");
+  introduction?.querySelectorAll(".text-link").forEach(a=>{a.href="#monthly-events";a.removeAttribute("target");a.removeAttribute("rel");a.replaceChildren(document.createTextNode("今月のイベント一覧"),element("span","","↗"));});
   const feedStatus = document.querySelector("#event-feed-status");
   const scheduleDate = new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo",
@@ -133,7 +135,7 @@
   const renderEvents = (events, mode = "fallback") => {
     const fragment = document.createDocumentFragment();
     events.forEach((event, index) => {
-      const card = element("article", "event-card");
+      const card = element("article", "monthly-event");
       const number = element(
         "span",
         "event-index",
@@ -163,7 +165,7 @@
           element(
             "span",
             "",
-            scheduleTime.format(new Date(event.startsAt)) + " 開始",
+            scheduleTime.format(new Date(event.startsAt)) + (event.endsAt ? "〜"+scheduleTime.format(new Date(event.endsAt)) : " 開始"),
           ),
         );
       } else if (event.date && /^\d{4}-\d{2}-\d{2}$/.test(event.date)) {
@@ -181,10 +183,10 @@
         element("p", "", event.description),
       );
       const link = externalLink(
-        "参加申込フォームへ",
-        event.url || content.links.registration,
+        "詳細・参加申込",
+        event.url,
       );
-      if (link) card.append(link);
+      if (link) card.append(link); else card.append(element("span","event-note","申込先は準備中です。"));
       fragment.append(card);
     });
     if (!events.length)
@@ -199,16 +201,21 @@
       );
     eventList.replaceChildren(fragment);
   };
-  renderEvents(content.events);
+  eventList.replaceChildren();
   const feed = content.eventFeed;
   if (feed?.url && window.UNITY_EVENT_FEED) {
     let busy = false;
     let lastAttempt = 0;
+    let loadedMonth = "";
     const refreshEvents = async () => {
-      if (busy || document.hidden || eventList.contains(document.activeElement))
+      if (busy || document.hidden || (eventList.contains(document.activeElement) && window.UNITY_EVENT_FEED.month()===loadedMonth))
         return;
       busy = true;
       lastAttempt = Date.now();
+      const month=window.UNITY_EVENT_FEED.month();
+      const label=document.querySelector("#monthly-label");
+      if(label)label.textContent=month.replace("-","年")+"月 / 日本時間";
+      if(month!==loadedMonth){eventList.replaceChildren();feedStatus.textContent="開催予定を読み込んでいます。";}
       const controller = new AbortController();
       const timer = setTimeout(
         () => controller.abort(),
@@ -229,14 +236,15 @@
           feed,
         );
         renderEvents(events, "live");
+        loadedMonth=month;
         if (feedStatus)
           feedStatus.textContent =
-            "開催日時は日本時間です。会場・参加費・募集状況はInstagram・公式LINEでご確認ください。";
+            "開催日時は日本時間です。参加費・募集状況は各イベントの詳細をご確認ください。";
       } catch {
-        renderEvents(content.events);
+        eventList.replaceChildren();
         if (feedStatus)
           feedStatus.textContent =
-            "最新の日程・参加費はInstagramや公式LINEでご確認ください。お申し込みは参加申込フォームへ。";
+            "開催予定を取得できませんでした。時間をおいて再度ご確認ください。";
       } finally {
         clearTimeout(timer);
         busy = false;
@@ -246,7 +254,7 @@
     const refreshMs = Math.max(60000, feed.refreshMs || 300000);
     setInterval(refreshEvents, refreshMs);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && Date.now() - lastAttempt >= refreshMs)
+      if (!document.hidden && (Date.now() - lastAttempt >= refreshMs || window.UNITY_EVENT_FEED.month()!==loadedMonth))
         refreshEvents();
     });
   }

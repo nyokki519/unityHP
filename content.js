@@ -11,7 +11,7 @@ window.UNITY_CONTENT = {
     url: "https://unity-analytics.vercel.app/api/public/events",
     refreshMs: 300000,
     timeoutMs: 8000,
-    limit: 6,
+    limit: 10000,
     // Analytics側に公開APIを追加・デプロイすると自動表示が始まります。
     images: {
       CAFE: "coffee",

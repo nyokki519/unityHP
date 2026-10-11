@@ -10,12 +10,14 @@
     "SPORT",
     "COMMUNITY",
   ];
+  function month(now=Date.now()){return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit'}).format(new Date(now));}
   function normalize(payload, options = {}, now = Date.now()) {
     if (
       !payload ||
       payload.version !== 1 ||
+      payload.month !== month(now) ||
       !Array.isArray(payload.events) ||
-      payload.events.length > 200
+      payload.events.length > 10000
     )
       throw new Error("invalid_feed");
     const unique = new Set();
@@ -41,7 +43,7 @@
         )
           return [];
         const timestamp = Date.parse(event.startsAt);
-        if (!Number.isFinite(timestamp) || timestamp < now) return [];
+        if (!Number.isFinite(timestamp) || month(timestamp) !== month(now)) return [];
         const category = categories.includes(event.category)
           ? event.category
           : "COMMUNITY";
@@ -63,7 +65,8 @@
             id: event.id,
             title: event.title.trim(),
             startsAt: new Date(timestamp).toISOString(),
-            category,
+            category: typeof event.category==='string' ? event.category.slice(0,80) : category,
+            endsAt:typeof event.endsAt==='string'&&Number.isFinite(Date.parse(event.endsAt))&&Date.parse(event.endsAt)>=timestamp?event.endsAt:null,
             image: options.images?.[category] || "cafe",
             url,
             location:
@@ -76,7 +79,7 @@
         ];
       })
       .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-      .slice(0, options.limit || 6);
+      .slice(0, options.limit || 10000);
   }
-  window.UNITY_EVENT_FEED = { normalize };
+  window.UNITY_EVENT_FEED = { normalize, month };
 })();

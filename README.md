@@ -170,3 +170,9 @@ python3 -m unittest discover -s tests -v
 [Analytics導入手順](https://github.com/nyokki519/unity-analytics/blob/main/docs/growth-measurement.md) / [フォーム受付確認](https://github.com/nyokki519/Unity_S/blob/main/integrations/google-form/README.md)。共有トラッカーを変更した場合はUnity_Sの同名ファイルも同時に更新してください。
 
 検証: `node --test tests/growth-tracker.test.cjs`、`python tools/check-growth-browser.py --form-root ../Unity_S`（Playwright/Chromium使用）。後者は通信を差し替えるので架空申込を本番へ送りません。
+
+## 今月のイベント一覧
+
+紹介01/02/03は#monthly-eventsへ移動し、紹介そのものは維持します。Analyticsの公開専用APIが「運営出席」と同じeventsの今月（日本時間）を返し、HPは5分ごと・ページ復帰時に更新します。公開が明示されたイベントだけを表示し、取得失敗と公開予定0件を区別します。各イベントの「詳細・参加申込」は登録済みURLを使用し、申込先がなければリンクを作りません。
+
+[公開判定と連携仕様](https://github.com/nyokki519/unity-analytics/blob/main/docs/public-monthly-events.md)。`node --test tests/*.test.cjs`、`python tools/check-monthly-events.py`で月替わり/スマホ/アンカー/日時/リンク/取得失敗を検証できます。既存openingのチェックはtools/check-site.pyに維持しています。

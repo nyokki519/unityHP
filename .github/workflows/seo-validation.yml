@@ -2,7 +2,7 @@ name: Validate SEO and published Pages
 on:
   push:
     branches: [main]
-    paths: ['index.html','content.js','script.js','growth-tracker.js','cafe-community/**','sitemap.xml','tools/**','tests/**','.github/workflows/seo-validation.yml']
+    paths: ['index.html','content.js','script.js','growth-tracker.js','event-feed.js','style.css','cafe-community/**','sitemap.xml','tools/**','tests/**','.github/workflows/seo-validation.yml']
   pull_request:
   workflow_dispatch:
 permissions:

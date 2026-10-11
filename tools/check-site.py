@@ -97,7 +97,7 @@ try:
     assert page.locator(href).count() == 1, href
    assert page.locator('.event-card').count() == 3
    assert page.locator('.event-card time').count() == 0
-   assert all('参加申込フォームへ' in label for label in page.locator('[data-link="registration"], .event-card>.text-link').all_text_contents())
+   assert all('参加申込フォームへ' in label for label in page.locator('[data-link="registration"]').all_text_contents())
    assert '最新の募集を見る' not in page.locator('body').inner_text()
    assert page.locator('.gallery-item').count() == 3
    assert page.locator('img[src*="latte-workshop"]').count() == 1
