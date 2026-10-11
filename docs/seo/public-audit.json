@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-10T16:50:13.720634+00:00",
+  "checkedAt": "2026-10-11T02:02:34.840119+00:00",
   "homepage": {
     "httpStatus": 200,
     "canonical": "https://nyokki519.github.io/unityHP/",
@@ -39,7 +39,7 @@
       "url": "https://developers.google.com/webmaster-tools/v1/searchanalytics/query",
       "httpStatus": 200,
       "status": "retrieved",
-      "sha256": "86f06aab0ca15427e4507c9e6f55c63856f3de3f43a156fc1dbf847507bd2473",
+      "sha256": "d21e9440f494962d7f64ce57242c62bc3c1ba8046946d01cdc62bee517dec473",
       "excerpts": [
         "eds the number of results for the query, the response will be a successful response with zero rows. dataState string [ Optional ] If \"all\" (case-insensitive), data will include fresh data .\n          If \"final\" (case-insensitive) or if this parameter is omitted, the returned data will include only finalized data.\n          If \"hourly_all\" (case-insensitive), data will include hourly breakdown. This will indicate that hourly data includes partial data and should be used when grouping by the HOUR API dimension. Response Results are grouped according to the dimensions specified in the request. Al",
         "sion\" : string , \"operator\" : string , \"expression\" : string } ] } ], \"aggregationType\" : string , \"rowLimit\" : integer , \"startRow\" : integer } Property name Value Description Notes startDate string [ Required ] Start date of the requested date range, in YYYY-MM-DD format, in PT time (UTC - 7:00/8:00) . Must be less than or equal to the end date. This value is included in the range. endDate string [ Required ] End date of the requested date range, in YYYY-MM-DD format, in PT time (UTC - 7:00/8:00). Must be greater than or equal to the start date. This value is included in the range. dimension"
@@ -50,7 +50,7 @@
       "url": "https://developers.google.com/webmaster-tools/v1/urlInspection.index/inspect",
       "httpStatus": 200,
       "status": "retrieved",
-      "sha256": "56c68365f91b75afe7c7edadf85cb8d4cbd4fcbec9c53839dde846117e8ec3be",
+      "sha256": "5adaee8dc0a4c65be6a349c2da92a066dca9d84b5c88f8bd38ab775b0912ce2c",
       "excerpts": [
         "st body JSON representation Response body JSON representation Authorization Scopes Try it! View the indexed, or indexable, status of the provided URL. Presently only the status of the version in the Google index is available; you cannot test the indexability of a live URL. HTTP request POST https://searchconsole.googleapis.com/v1/urlInspection/index:inspect The URL uses gRPC Transcoding syntax. Request body The request body contains data with the following structure: JSON representation { \"inspectionUrl\" : string , \"siteUrl\" : string , \"languageCode\" : string } Fields inspectionUrl string Requ",
         "x. Request body The request body contains data with the following structure: JSON representation { \"inspectionUrl\" : string , \"siteUrl\" : string , \"languageCode\" : string } Fields inspectionUrl string Required. Fully-qualified URL to inspect. Must be under the property specified in \"siteUrl\". siteUrl string Required. The URL of the property as defined in Search Console. Note that\n                      URL-prefix properties must include a trailing / mark. Examples: https://www.example.com/ for a URL-prefix property, or sc-domain:example.com for a Domain property. languageCode string Optional. A",
@@ -62,7 +62,7 @@
       "url": "https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics",
       "httpStatus": 200,
       "status": "retrieved",
-      "sha256": "274ab61c1cd635fd12ad2ca025ed107ee41ac6c56b23f9e92471cd4ba8473bf3",
+      "sha256": "1e80780103635aea7e55b7c822d7277a057b6d6706f7c0ada859218d8f50e6a7",
       "excerpts": [
         "nd the JavaScript SEO basics Fix search-related JavaScript problems Fix lazy-loaded content Dynamic rendering as a workaround Page and content metadata Page metadata Meta tags Meta tags and HTML attributes that Google supports Robots meta tag, data-nosnippet, and X-Robots-Tag noindex rel attributes Removals Control what you share with Google Page removals Image removals Redacted information Site moves and changes Redirects and Google Search Site moves Changing your hosting Move a site with URL changes A/B testing Temporarily pause or disable a website Ranking and search appearance Overview AI ",
         "t Dynamic rendering as a workaround Page and content metadata Page metadata Meta tags Meta tags and HTML attributes that Google supports Robots meta tag, data-nosnippet, and X-Robots-Tag noindex rel attributes Removals Control what you share with Google Page removals Image removals Redacted information Site moves and changes Redirects and Google Search Site moves Changing your hosting Move a site with URL changes A/B testing Temporarily pause or disable a website Ranking and search appearance Overview AI features Byline dates Favicons Featured snippets Flexible Sampling Google Discover Images "
@@ -73,7 +73,7 @@
       "url": "https://help.instagram.com/147542625391305/",
       "httpStatus": 200,
       "status": "not_verified",
-      "sha256": "bc344f69518319a6837f5ad3f2240b8787d5b92b0983a9351e3407d18710eeb1",
+      "sha256": "d481bd4ac084bee8fe7df4f3bb5a7afbf0eb597fca1230e2ce7cd11ca0193459",
       "excerpts": []
     },
     {
@@ -89,7 +89,7 @@
       "url": "https://developers.facebook.com/docs/instagram-platform/instagram-api-with-facebook-login/insights/",
       "httpStatus": 200,
       "status": "retrieved",
-      "sha256": "02727a28dab3b75ee7cfd07877a77aedc31f814146dda00bbb18b60f8782feac",
+      "sha256": "fa62f0ece0ba2a877d8509a22776555571fb13bd9611ee999372a860cf4cd1bd",
       "excerpts": [
         "Instagram Platform insights | Meta for Developers Build with us Docs Blog Resources Developer centers Login Instagram Platform Instagram Platform Instagram Platform Overview Create an app Instagram API with Instagram Login Instagram API with Instagram Login Migration guide Business Login for Instagram Get started Messaging Messaging User Profile API Quick Replies Generic Template Button Template Sender Actions Persistent Menu Ice Breakers ig.me Welcome message ads Conversations API Mentions Instagram API with Face",
         "nstagram.com graph.facebook.com Login Type Business Login for Instagram Facebook Login for Business Permissions instagram_business_basic instagram_business_manage_insights instagram_basic instagram_manage_insights pages_read_engagement If the app user was granted a role on the Page connected to your app user’s Instagram professional account via the Business Manager, your app will also need: ads_management ads_read Access Level Advanced Access if your app serves Instagram professional accounts you don’t own or manage Standard Access if your app serves Instagram professional accounts you own or ",
@@ -107,9 +107,9 @@
     "googlebotAllowed": true
   },
   "analyticsPrivateApi": {
-    "httpStatus": 404,
-    "unauthenticatedDenied": false,
-    "cacheControl": "public, max-age=0, must-revalidate",
-    "status": "deployment_or_configuration_pending"
+    "httpStatus": 401,
+    "unauthenticatedDenied": true,
+    "cacheControl": "no-store",
+    "status": "verified"
   }
 }
