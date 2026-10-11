@@ -182,9 +182,17 @@
         meta,
         element("p", "", event.description),
       );
+      let registrationUrl = content.links.registration;
+      try {
+        const registration = new URL(registrationUrl);
+        if (registration.origin === 'https://nyokki519.github.io' && registration.pathname === '/Unity_S/' && typeof event.id === 'string') {
+          registration.searchParams.set('event_id', event.id);
+          registrationUrl = registration.href;
+        }
+      } catch { /* Keep the configured fallback; safeUrl validates it below. */ }
       const link = externalLink(
         event.url ? "詳細・参加申込" : "参加申込フォームへ",
-        event.url || content.links.registration,
+        event.url || registrationUrl,
       );
       if (link) card.append(link); else card.append(element("span","event-note","申込先は準備中です。"));
       fragment.append(card);

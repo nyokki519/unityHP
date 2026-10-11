@@ -176,3 +176,5 @@ python3 -m unittest discover -s tests -v
 紹介01/02/03は#monthly-eventsへ移動し、紹介そのものは維持します。Analyticsの公開専用APIが「運営出席」と同じeventsの今月（日本時間）を返し、HPは5分ごと・ページ復帰時に更新します。公開が明示されたイベントだけを表示し、取得失敗と公開予定0件を区別します。個別URLがあるイベントは「詳細・参加申込」、未設定のイベントは「参加申込フォームへ」として既存の共通フォームへ案内します。
 
 [公開判定と連携仕様](https://github.com/nyokki519/unity-analytics/blob/main/docs/public-monthly-events.md)。`node --test tests/*.test.cjs`、`python tools/check-monthly-events.py`で月替わり/スマホ/アンカー/日時/リンク/取得失敗を検証できます。既存openingのチェックはtools/check-site.pyに維持しています。
+
+イベントに個別URLがない場合のUnity_Sリンクには `event_id` を付け、申込画面で公開候補と照合して事前選択します。個別のつなげーとURLは維持します。名前・メールはURLに入れません。Unity_Sの新申込UIはGoogleフォーム項目と非公開保存先の検証後に有効化します。
