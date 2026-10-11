@@ -21,7 +21,7 @@ css = (root / 'style.css').read_text()
 css = re.sub(r'assets/fonts/[A-Za-z0-9-]+\.woff2', lambda m: 'data:font/woff2;base64,' + base64.b64encode((root / m.group(0)).read_bytes()).decode(), css)
 html = re.sub(r'<link[^>]*id="site-styles"[^>]*>', lambda _: '<style>' + css + '</style>', html)
 html = re.sub(r'<noscript>\s*<link[^>]*href="style\.css[^"\s]*"[^>]*>\s*</noscript>', '', html)
-for name in ('content.js', 'event-feed.js', 'script.js', 'intro.js'):
+for name in ('content.js', 'event-feed.js', 'script.js', 'intro.js', 'growth-tracker.js'):
     html = re.sub(r'<script src="' + re.escape(name) + r'(?:\?[^"\s]+)?" (?:defer|async)></script>', '', html)
 html = html.replace('</body>', '<script>' + content + '</script><script>' + (root / 'event-feed.js').read_text() + '</script><script>' + script + '</script></body>')
 html = re.sub(r'assets/images/[A-Za-z0-9-]+\.webp', embed, html)

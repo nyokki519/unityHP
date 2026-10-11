@@ -162,3 +162,11 @@ python3 -m unittest discover -s tests -v
 公開後はActionsの「Validate SEO and published Pages」が実際のHTTP・canonical・確認ファイル等を検査し、`docs/seo/public-audit.json` に証拠を保存します。診断と制約は [docs/seo/diagnosis.md](docs/seo/diagnosis.md)、Instagramの設定条件と改善案は [docs/seo/instagram.md](docs/seo/instagram.md) を参照してください。
 
 週次のSearch Console監視・比較・施策履歴・Obsidian出力は [Unity-agent](https://github.com/nyokki519/Unity-agent)、非公開レポートの保存と設定画面は [unity-analytics](https://github.com/nyokki519/unity-analytics) に実装しています。Google認証等の初回手順はAgent READMEを参照してください。順位やインデックスは未認証のまま断定せず、施策後28日以上を観察します。
+
+## 匿名の参加申込導線計測
+
+`growth-tracker.js` は公式公開originのみで訪問・申込クリックを集計し、Unity_Sへ匿名IDと推定流入元を渡します。Cookie・氏名・全URL・検索語は保存せず、DNT/GPCを尊重します。追跡が使えなくても画面・アニメーション・申込リンクは使えます。Googleの受理は別のフォーム確認トリガー、外部LINE/つなげーとの直接申込や実出席は対象外です。
+
+[Analytics導入手順](https://github.com/nyokki519/unity-analytics/blob/main/docs/growth-measurement.md) / [フォーム受付確認](https://github.com/nyokki519/Unity_S/blob/main/integrations/google-form/README.md)。共有トラッカーを変更した場合はUnity_Sの同名ファイルも同時に更新してください。
+
+検証: `node --test tests/growth-tracker.test.cjs`、`python tools/check-growth-browser.py --form-root ../Unity_S`（Playwright/Chromium使用）。後者は通信を差し替えるので架空申込を本番へ送りません。
