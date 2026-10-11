@@ -17,6 +17,8 @@ def route(r):
   if root:
    prefix='/unityHP/' if root==hp else '/Unity_S/';rel=u.path[len(prefix):] or 'index.html';p=(root/rel)
    if p.is_dir():p=p/'index.html'
+   if u.path=='/Unity_S/registration-config.js':
+    r.fulfill(status=200,body="window.UnityRegistrationConfig={enabled:true,entries:{eventName:'entry.1834327533',date:'entry.2119680669',name:'entry.1786168698',experience:'entry.8002',eventId:'entry.8003',mode:'entry.8004'}};",content_type='application/javascript');return
    if u.path=='/Unity_S/tracking-config.js':r.fulfill(status=200,body="window.UnityGrowthConfig={formEntry:'entry.999'};",content_type='application/javascript');return
    if p.exists():r.fulfill(status=200,body=p.read_bytes(),content_type=mimetypes.guess_type(str(p))[0] or 'application/octet-stream');return
  r.abort()
@@ -25,8 +27,8 @@ with sync_playwright() as p:
  page.goto('https://nyokki519.github.io/unityHP/?utm_source=instagram&q=private');page.wait_for_timeout(700)
  href=page.locator('[data-link="registration"]').first.get_attribute('href');assert 'unity_journey=' in href and 'unity_source=instagram' in href
  page.keyboard.press('Escape');page.locator('[data-link="registration"]').first.evaluate('(a)=>a.click()');page.wait_for_timeout(400)
- f=c.new_page();f.goto(href);f.wait_for_timeout(500);f.locator('#eventName').fill('Synthetic browser test');f.locator('#date').fill('2026-11-01');f.locator('#name').fill('Synthetic test person');f.locator('#submitBtn').click();f.wait_for_timeout(500)
- assert f.locator('#msg').inner_text()=='ご登録ありがとうございます。';assert google_posts;assert google_posts[0].get('entry.999')==[events[0]['journeyId']];assert 'unity_journey' not in f.url
+ f=c.new_page();f.goto(href);f.wait_for_timeout(500);f.locator('#manual-toggle').check();f.locator('#eventName').fill('Synthetic browser test');f.locator('#date').fill('2026-11-01');f.locator('#to-details').click();f.locator('#name').fill('Synthetic test person');f.locator('#experience-returning').check();f.locator('#review-button').click();assert not any(e['stage']=='form_submit' for e in events);f.locator('#send-button').click();f.wait_for_timeout(500)
+ assert f.locator('#result-title').inner_text()=='送信処理を行いました';assert 'Google側の受付・保存はこの画面では確認できません' in f.locator('#result').inner_text();assert google_posts;assert google_posts[0].get('entry.999')==[events[0]['journeyId']];assert 'unity_journey' not in f.url
  assert {'visit','registration_click','form_view','form_submit'} <= {e['stage'] for e in events}
  assert all(set(e)=={'journeyId','source','stage'} and e['source']=='instagram' for e in events),events
  assert len(set(e['journeyId'] for e in events))==1
