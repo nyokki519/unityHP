@@ -183,8 +183,8 @@
         element("p", "", event.description),
       );
       const link = externalLink(
-        "詳細・参加申込",
-        event.url,
+        event.url ? "詳細・参加申込" : "参加申込フォームへ",
+        event.url || content.links.registration,
       );
       if (link) card.append(link); else card.append(element("span","event-note","申込先は準備中です。"));
       fragment.append(card);
