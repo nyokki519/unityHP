@@ -18,7 +18,7 @@ def route(r):
    prefix='/unityHP/' if root==hp else '/Unity_S/';rel=u.path[len(prefix):] or 'index.html';p=(root/rel)
    if p.is_dir():p=p/'index.html'
    if u.path=='/Unity_S/registration-config.js':
-    r.fulfill(status=200,body="window.UnityRegistrationConfig={enabled:true,privacyVerified:true,entries:{eventName:'entry.1834327533',date:'entry.2119680669',name:'entry.1786168698',email:'entry.8001',experience:'entry.8002',eventId:'entry.8003',mode:'entry.8004'}};",content_type='application/javascript');return
+    r.fulfill(status=200,body="window.UnityRegistrationConfig={enabled:true,entries:{eventName:'entry.1834327533',date:'entry.2119680669',name:'entry.1786168698',experience:'entry.8002',eventId:'entry.8003',mode:'entry.8004'}};",content_type='application/javascript');return
    if u.path=='/Unity_S/tracking-config.js':r.fulfill(status=200,body="window.UnityGrowthConfig={formEntry:'entry.999'};",content_type='application/javascript');return
    if p.exists():r.fulfill(status=200,body=p.read_bytes(),content_type=mimetypes.guess_type(str(p))[0] or 'application/octet-stream');return
  r.abort()

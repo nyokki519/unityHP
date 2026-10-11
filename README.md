@@ -177,4 +177,4 @@ python3 -m unittest discover -s tests -v
 
 [公開判定と連携仕様](https://github.com/nyokki519/unity-analytics/blob/main/docs/public-monthly-events.md)。`node --test tests/*.test.cjs`、`python tools/check-monthly-events.py`で月替わり/スマホ/アンカー/日時/リンク/取得失敗を検証できます。既存openingのチェックはtools/check-site.pyに維持しています。
 
-イベントに個別URLがない場合のUnity_Sリンクには `event_id` を付け、申込画面で公開候補と照合して事前選択します。個別のつなげーとURLは維持します。名前・メールはURLに入れません。Unity_Sの新申込UIはGoogleフォーム項目と非公開保存先の検証後に有効化します。
+イベントに個別URLがない場合のUnity_Sリンクには `event_id` を付け、申込画面で公開候補と照合して事前選択します。個別のつなげーとURLは維持します。名前・メールはURLに入れません。Unity_Sはメールを収集せず、初参加者に公式LINE追加と「初参加/参加希望」を案内します。既存3項目で申込でき、Googleへの公開ID保存は実entry設定後に有効になります。
